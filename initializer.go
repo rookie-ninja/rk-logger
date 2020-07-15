@@ -15,8 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
+	"path"
 )
 
 type FileType int
@@ -50,11 +49,11 @@ func (fileType FileType) String() string {
 // then, we will use default write sync
 func NewZapLoggerWithBytes(raw []byte, fileType FileType, lumber *lumberjack.Logger, opts ...zap.Option) (*zap.Logger, *zap.Config, error) {
 	if raw == nil {
-		return nil, nil, errors.New("bytes are nil")
+		return nil, nil, errors.New("input byte array is nil")
 	}
 
 	if len(raw) == 0 {
-		return nil, nil, errors.New("length of bytes is zero")
+		return nil, nil, errors.New("byte array is empty")
 	}
 
 	// Initialize zap logger from config file
@@ -69,7 +68,6 @@ func NewZapLoggerWithBytes(raw []byte, fileType FileType, lumber *lumberjack.Log
 		}
 
 		logger, err = NewZapLoggerWithConf(config, lumber, opts...)
-		return logger, config, err
 	} else if fileType == YAML {
 		// parse yaml file
 		if err := yaml.Unmarshal(raw, config); err != nil {
@@ -139,7 +137,7 @@ func NewZapLoggerWithConfPath(filePath string, fileType FileType, lumber *lumber
 func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ...zap.Option) (*zap.Logger, error) {
 	// Validate parameters
 	if config == nil {
-		return nil, errors.New("zap config is nil!")
+		return nil, errors.New("zap config is nil")
 	}
 
 	if lumber == nil {
@@ -184,25 +182,25 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	}
 
 	// add error output sync
-	errSink, _, err := zap.Open(config.ErrorOutputPaths...)
-	if err != nil {
-		return nil, err
+	if len(config.ErrorOutputPaths) > 0 {
+		errSink, _, err := zap.Open(config.ErrorOutputPaths...)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, zap.ErrorOutput(errSink))
 	}
-	opts = append(opts, zap.ErrorOutput(errSink))
 
-	return zap.New(core, opts...).
-		WithOptions(opts...).
-		With(initialFields...), nil
+	return zap.New(core, opts...).With(initialFields...), nil
 }
 
 // Init lumberjack logger as write sync with raw byte array of config file
 func NewLumberjackLoggerWithBytes(raw []byte, fileType FileType) (*lumberjack.Logger, error) {
 	if raw == nil {
-		return nil, errors.New("bytes are nil")
+		return nil, errors.New("input byte array is nil")
 	}
 
 	if len(raw) == 0 {
-		return nil, errors.New("length of bytes is zero")
+		return nil, errors.New("byte array is empty")
 	}
 
 	logger := &lumberjack.Logger{}
@@ -215,6 +213,8 @@ func NewLumberjackLoggerWithBytes(raw []byte, fileType FileType) (*lumberjack.Lo
 		if err := json.Unmarshal(raw, logger); err != nil {
 			return nil, err
 		}
+	} else {
+		return nil, errors.New("unknown type")
 	}
 
 	return logger, nil
@@ -269,17 +269,17 @@ func generateEncoder(config *zap.Config) zapcore.Encoder {
 	}
 }
 
-// Get root path of current process
-func getRootPath() string {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-
-	if err != nil {
-		// Unexpected error, return empty string
-		return ""
+// Parse relative path, convert it to current working directory
+func toAbsoluteWorkingDir(filePath string) (string, error) {
+	if path.IsAbs(filePath) {
+		return filePath, nil
 	}
 
-	lastIndexOfSlash := strings.LastIndex(dir, "/")
-	rootPath := dir[:lastIndexOfSlash]
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
 
-	return rootPath
+	// relative path, add current working directory
+	return path.Clean(path.Join(dir, filePath)), nil
 }

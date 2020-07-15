@@ -1,0 +1,28 @@
+---
+level: debug
+encoding: console
+outputPaths:
+  - stdout
+  - logs/rk-logger.log
+errorOutputPaths:
+  - stderr
+initialFields:
+  initFieldKey: fieldValue
+encoderConfig:
+  messageKey: messagea
+  levelKey: level
+  nameKey: logger
+  timeKey: time
+  callerKey: caller
+  stacktraceKey: stacktrace
+  callstackKey: callstack
+  errorKey: error
+  timeEncoder: iso8601
+  fileKey: file
+  levelEncoder: capital
+  durationEncoder: second
+  callerEncoder: full
+  nameEncoder: full
+  sampling:
+    initial: '3'
+    thereafter: '10'
