@@ -150,12 +150,12 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	for i := range config.OutputPaths {
 		if config.OutputPaths[i] != "stdout" {
 			lumberNew := &lumberjack.Logger{
-				Filename: config.OutputPaths[i],
-				MaxAge: lumber.MaxAge,
+				Filename:   config.OutputPaths[i],
+				MaxAge:     lumber.MaxAge,
 				MaxBackups: lumber.MaxBackups,
-				MaxSize: lumber.MaxSize,
-				Compress: lumber.Compress,
-				LocalTime: lumber.LocalTime,
+				MaxSize:    lumber.MaxSize,
+				Compress:   lumber.Compress,
+				LocalTime:  lumber.LocalTime,
 			}
 
 			sync = append(sync, zapcore.AddSync(lumberNew))

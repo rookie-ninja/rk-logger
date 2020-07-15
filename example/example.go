@@ -61,9 +61,9 @@ func NewZapLoggerWithConfExample() {
 	}
 
 	config := &zap.Config{
-		Level: zap.NewAtomicLevelAt(zap.InfoLevel),
+		Level:         zap.NewAtomicLevelAt(zap.InfoLevel),
 		EncoderConfig: encodingConfig,
-		OutputPaths: []string{"stdout", "logs/rk-logger.log"},
+		OutputPaths:   []string{"stdout", "logs/rk-logger.log"},
 	}
 	logger, _ := rk_logger.NewZapLoggerWithConf(config, &lumberjack.Logger{})
 	logger.Info("NewZapLoggerWithConfExample")
