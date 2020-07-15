@@ -161,5 +161,5 @@ standard.
 
 <hr>
 
-Released under the [MIT License](LICENSE.txt).
+Released under the [MIT License](LICENSE).
 
