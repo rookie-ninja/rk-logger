@@ -1,4 +1,4 @@
-module rookie-ninja/rk-logger
+module github.com/rookie-ninja/rk-logger
 
 go 1.14
 

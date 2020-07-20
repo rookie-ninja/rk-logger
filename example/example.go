@@ -5,12 +5,12 @@
 package main
 
 import (
+	"github.com/rookie-ninja/rk-logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"path"
-	"rookie-ninja/rk-logger"
 )
 
 func main() {
