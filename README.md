@@ -9,15 +9,16 @@ Currently, support zap logger as default logger and lumberjack as log rotation
 `go get -u rookie-ninja/rk-logger`
 
 ## Quick Start
-In order to init zap logger with full log rotation, rk-logger support three different utility functions
-- With zap config file path
-- With zap config as byte array
-- With zap config
+We combined zap config and lumberjack config in the same config file
+Both of the configs could keep same format as it 
 
-**Caution! Since zap and lumberjack both support log file path, we rk-logger define log file path in zap config file only.**
+In order to init zap logger with full log rotation, rk-logger support three different utility functions
+- With zap+lumberjack config file path
+- With zap+lumberjack config as byte array
+- With zap config and lumberjack config
 
 ### With Config file path
-zap config:
+config:
 ```yaml
 ---
 level: debug
@@ -47,27 +48,21 @@ encoderConfig:
   sampling:
     initial: '3'
     thereafter: '10'
-```
-lumberjack config:
-```yaml
----
 maxsize: 1
 maxage: 7
 maxbackups: 3
 localtime: true
 compress: true
 ```
+
 Example:
 ```go
 func NewZapLoggerWithConfPathExample() {
     // get current working directory
     dir, _ := os.Getwd()
-    
-    // init lumberjack logger
-    lumberjack, _ := rk_logger.NewLumberjackLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/lumberjack.yaml")), rk_logger.YAML) 
-    
-    // init zap logger 
-    logger, _, _ := rk_logger.NewZapLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/zap.yaml")), rk_logger.YAML, lumberjack)
+
+    // init logger 
+    logger, _, _ := rk_logger.NewZapLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/zap.yaml")), rk_logger.YAML)
     
     // use it 
     logger.Info("NewZapLoggerWithConfPathExample")
@@ -77,7 +72,7 @@ func NewZapLoggerWithConfPathExample() {
 Example:
 ```go
 func NewZapLoggerWithBytesExample() {
-    zapBytes := []byte(`{
+    bytes := []byte(`{
       "level": "debug",
       "encoding": "console",
       "outputPaths": ["stdout", "logs/rk-logger.log"],
@@ -102,20 +97,15 @@ func NewZapLoggerWithBytesExample() {
             "initial": "3",
             "thereafter": "10"
         }
-      }
-    }`)
-    
-    lumberBytes := []byte(`{
-        "maxsize": 1,
-        "maxage": 7,
-        "maxbackups": 3,
-        "localtime": true,
-        "compress": true
+      },
+      "maxsize": 1,
+      "maxage": 7,
+      "maxbackups": 3,
+      "localtime": true,
+      "compress": true
     }`)
 
-    lumber, _ := rk_logger.NewLumberjackLoggerWithBytes(lumberBytes, rk_logger.JSON)
-
-    logger, _, err := rk_logger.NewZapLoggerWithBytes(zapBytes, rk_logger.JSON, lumber)
+    logger, _, err := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
     
     logger.Info("NewZapLoggerWithBytesExample")
 }

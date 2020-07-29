@@ -6,8 +6,6 @@ package rk_logger
 
 import (
 	"encoding/json"
-	"github.com/BurntSushi/toml"
-	"github.com/hashicorp/hcl"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -23,21 +21,17 @@ type FileType int
 // Config file type which support json, yaml, toml and hcl
 // JSON: https://www.json.org/
 // YAML: https://yaml.org/
-// TOML: https://github.com/toml-lang/toml
-// HCL : https://github.com/hashicorp/hcl
 const (
 	JSON FileType = 0
 	YAML FileType = 1
-	TOML FileType = 2
-	HCL  FileType = 3
 )
 
 // Stringfy above config file types.
 func (fileType FileType) String() string {
-	names := [...]string{"JSON", "YAML", "TOML", "HCL"}
+	names := [...]string{"JSON", "YAML"}
 
 	// Please do not forget to change the boundary while adding a new config file types
-	if fileType < JSON || fileType > HCL {
+	if fileType < JSON || fileType > YAML {
 		return "UNKNOWN"
 	}
 
@@ -47,7 +41,7 @@ func (fileType FileType) String() string {
 // Init zap logger with byte array from content of config file
 // lumberjack.Logger could be empty, if not provided,
 // then, we will use default write sync
-func NewZapLoggerWithBytes(raw []byte, fileType FileType, lumber *lumberjack.Logger, opts ...zap.Option) (*zap.Logger, *zap.Config, error) {
+func NewZapLoggerWithBytes(raw []byte, fileType FileType, opts ...zap.Option) (*zap.Logger, *zap.Config, error) {
 	if raw == nil {
 		return nil, nil, errors.New("input byte array is nil")
 	}
@@ -59,36 +53,33 @@ func NewZapLoggerWithBytes(raw []byte, fileType FileType, lumber *lumberjack.Log
 	// Initialize zap logger from config file
 	var logger *zap.Logger
 	var err error
-	config := &zap.Config{}
+	zapConfig := &zap.Config{}
+	lumberConfig := &lumberjack.Logger{}
 
 	if fileType == JSON {
-		// parse json file
-		if err := json.Unmarshal(raw, config); err != nil {
+		// parse zap json file
+		if err := json.Unmarshal(raw, zapConfig); err != nil {
 			return nil, nil, err
 		}
 
-		logger, err = NewZapLoggerWithConf(config, lumber, opts...)
+		// parse lumberjack json file
+		if err := json.Unmarshal(raw, lumberConfig); err != nil {
+			return nil, nil, err
+		}
+
+		logger, err = NewZapLoggerWithConf(zapConfig, lumberConfig, opts...)
 	} else if fileType == YAML {
-		// parse yaml file
-		if err := yaml.Unmarshal(raw, config); err != nil {
+		// parse zap yaml file
+		if err := yaml.Unmarshal(raw, zapConfig); err != nil {
 			return nil, nil, err
 		}
 
-		logger, err = NewZapLoggerWithConf(config, lumber, opts...)
-	} else if fileType == TOML {
-		// parse toml file
-		if err := toml.Unmarshal(raw, config); err != nil {
+		// parse lumberjack yaml file
+		if err := yaml.Unmarshal(raw, lumberConfig); err != nil {
 			return nil, nil, err
 		}
 
-		logger, err = NewZapLoggerWithConf(config, lumber, opts...)
-	} else if fileType == HCL {
-		// parse hcl file
-		if err := hcl.Decode(config, string(raw)); err != nil {
-			return nil, nil, err
-		}
-
-		logger, err = NewZapLoggerWithConf(config, lumber, opts...)
+		logger, err = NewZapLoggerWithConf(zapConfig, lumberConfig, opts...)
 	} else {
 		logger, err = nil, errors.New("invalid config file")
 	}
@@ -98,14 +89,14 @@ func NewZapLoggerWithBytes(raw []byte, fileType FileType, lumber *lumberjack.Log
 		return nil, nil, err
 	}
 
-	return logger, config, err
+	return logger, zapConfig, err
 }
 
 // Init zap logger with config file path
 // File path needs to be absolute path
 // lumberjack.Logger could be empty, if not provided,
 // then, we will use default write sync
-func NewZapLoggerWithConfPath(filePath string, fileType FileType, lumber *lumberjack.Logger, opts ...zap.Option) (*zap.Logger, *zap.Config, error) {
+func NewZapLoggerWithConfPath(filePath string, fileType FileType, opts ...zap.Option) (*zap.Logger, *zap.Config, error) {
 	if len(filePath) == 0 {
 		return nil, nil, errors.New("file path is empty")
 	}
@@ -119,12 +110,11 @@ func NewZapLoggerWithConfPath(filePath string, fileType FileType, lumber *lumber
 
 	if err == nil {
 		bytes, readErr := ioutil.ReadFile(filePath)
-
-		if readErr == nil {
-			logger, config, err = NewZapLoggerWithBytes(bytes, fileType, lumber, opts...)
-		} else {
-			err = readErr
+		if readErr != nil {
+			return logger, config, readErr
 		}
+
+		logger, config, err = NewZapLoggerWithBytes(bytes, fileType, opts...)
 	}
 
 	return logger, config, err

@@ -26,3 +26,8 @@ encoderConfig:
   sampling:
     initial: '3'
     thereafter: '10'
+maxsize: 1
+maxage: 7
+maxbackups: 3
+localtime: true
+compress: true

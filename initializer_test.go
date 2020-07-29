@@ -15,15 +15,11 @@ import (
 func TestConfigFileType_Indexing(t *testing.T) {
 	assert.Equal(t, FileType(0), JSON)
 	assert.Equal(t, FileType(1), YAML)
-	assert.Equal(t, FileType(2), TOML)
-	assert.Equal(t, FileType(3), HCL)
 }
 
 func TestConfigFileType_String_HappyCase(t *testing.T) {
 	assert.Equal(t, "JSON", JSON.String())
 	assert.Equal(t, "YAML", YAML.String())
-	assert.Equal(t, "TOML", TOML.String())
-	assert.Equal(t, "HCL", HCL.String())
 }
 
 func TestConfigFileType_String_Overflow_LeftBoundary(t *testing.T) {
@@ -63,24 +59,6 @@ func TestNewZapLoggerWithBytes_With_InvalidJson(t *testing.T) {
 func TestNewZapLoggerWithBytes_With_InvalidYaml(t *testing.T) {
 	invalidYaml := `"key"="value"`
 	logger, config, err := NewZapLoggerWithBytes([]byte(invalidYaml), YAML, nil)
-	assert.Nil(t, logger)
-	assert.Nil(t, config)
-	assert.NotNil(t, err)
-}
-
-// With invalid toml
-func TestNewZapLoggerWithBytes_With_InvalidToml(t *testing.T) {
-	invalidToml := `key: "value"`
-	logger, config, err := NewZapLoggerWithBytes([]byte(invalidToml), TOML, nil)
-	assert.Nil(t, logger)
-	assert.Nil(t, config)
-	assert.NotNil(t, err)
-}
-
-// With invalid toml
-func TestNewZapLoggerWithBytes_With_InvalidHCL(t *testing.T) {
-	invalidHCL := `"key" : "value"`
-	logger, config, err := NewZapLoggerWithBytes([]byte(invalidHCL), HCL, nil)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -140,6 +118,11 @@ func TestNewZapLoggerWithBytes_HappyCase(t *testing.T) {
             "thereafter": "10"
         }
       }
+      "maxsize": 1,
+      "maxage": 7,
+      "maxbackups": 3,
+      "localtime": true,
+      "compress": true
     }`)
 	logger, config, err := NewZapLoggerWithBytes(bytes, JSON, nil)
 	assert.NotNil(t, logger)
