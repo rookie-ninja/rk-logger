@@ -18,6 +18,8 @@ import (
 
 type FileType int
 
+var StdoutLogger, _ = zap.NewDevelopment()
+
 // Config file type which support json, yaml, toml and hcl
 // JSON: https://www.json.org/
 // YAML: https://yaml.org/
@@ -36,6 +38,16 @@ func (fileType FileType) String() string {
 	}
 
 	return names[fileType]
+}
+
+func ToFileType(f string) FileType {
+	if f == "json" || f == ".json" {
+		return JSON
+	} else if f == "yaml" || f == "yml" || f == ".yaml" || f == ".yml" {
+		return YAML
+	}
+
+	return -1
 }
 
 // Init zap logger with byte array from content of config file
