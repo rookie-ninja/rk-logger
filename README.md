@@ -6,7 +6,7 @@ Currently, support zap logger as default logger and lumberjack as log rotation
 - [lumberjack](https://github.com/natefinch/lumberjack)
 
 ## Installation
-`go get -u rookie-ninja/rk-logger`
+`go get -u github.com/rookie-ninja/rk-logger`
 
 ## Quick Start
 We combined zap config and lumberjack config in the same config file
