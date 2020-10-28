@@ -18,7 +18,10 @@ import (
 
 type FileType int
 
-var StdoutLogger, _ = zap.NewDevelopment()
+var (
+	StdoutLogger, _ = zap.NewDevelopment()
+	NoopLogger      = zap.NewNop()
+)
 
 // Config file type which support json, yaml, toml and hcl
 // JSON: https://www.json.org/
