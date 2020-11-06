@@ -19,7 +19,8 @@ import (
 type FileType int
 
 var (
-	StdoutLogger, _ = zap.NewDevelopment()
+	StdoutLoggerConfig = zap.NewDevelopmentConfig()
+	StdoutLogger, _ = StdoutLoggerConfig.Build()
 	NoopLogger      = zap.NewNop()
 )
 
@@ -41,16 +42,6 @@ func (fileType FileType) String() string {
 	}
 
 	return names[fileType]
-}
-
-func ToFileType(f string) FileType {
-	if f == "json" || f == ".json" {
-		return JSON
-	} else if f == "yaml" || f == "yml" || f == ".yaml" || f == ".yml" {
-		return YAML
-	}
-
-	return -1
 }
 
 // Init zap logger with byte array from content of config file
