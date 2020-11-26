@@ -19,7 +19,14 @@ import (
 type FileType int
 
 var (
-	StdoutLoggerConfig = zap.NewDevelopmentConfig()
+	StdoutLoggerConfig = zap.Config{
+		Level:            zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development:      true,
+		Encoding:         "console",
+		EncoderConfig:    zap.NewDevelopmentEncoderConfig(),
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+	}
 	StdoutLogger, _ = StdoutLoggerConfig.Build()
 	NoopLogger      = zap.NewNop()
 )
