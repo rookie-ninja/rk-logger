@@ -3,7 +3,6 @@ level: debug
 encoding: console
 outputPaths:
   - stdout
-  - logs/rk-logger.log
 errorOutputPaths:
   - stderr
 initialFields:
@@ -26,7 +25,7 @@ encoderConfig:
   sampling:
     initial: '3'
     thereafter: '10'
-maxsize: 1
+maxsize: 1024
 maxage: 7
 maxbackups: 3
 localtime: true

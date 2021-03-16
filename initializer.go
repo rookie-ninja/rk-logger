@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_logger
+package rklogger
 
 import (
 	"encoding/json"
@@ -19,16 +19,50 @@ import (
 type FileType int
 
 var (
-	StdoutLoggerConfig = zap.Config{
-		Level:            zap.NewAtomicLevelAt(zap.InfoLevel),
-		Development:      true,
-		Encoding:         "console",
-		EncoderConfig:    zap.NewDevelopmentEncoderConfig(),
-		OutputPaths:      []string{"stdout"},
-		ErrorOutputPaths: []string{"stderr"},
+	StdoutEncoderConfig = NewZapStdoutEncoderConfig()
+	StdoutLoggerConfig  = &zap.Config{
+		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development:       true,
+		Encoding:          "console",
+		DisableStacktrace: true,
+		EncoderConfig:     *StdoutEncoderConfig,
+		OutputPaths:       []string{"stdout"},
+		ErrorOutputPaths:  []string{"stderr"},
 	}
 	StdoutLogger, _ = StdoutLoggerConfig.Build()
 	NoopLogger      = zap.NewNop()
+
+	EventLoggerConfigBytes = []byte(`{
+     "level": "info",
+     "encoding": "console",
+     "outputPaths": ["stdout"],
+     "errorOutputPaths": ["stderr"],
+     "initialFields": {},
+     "encoderConfig": {
+       "messageKey": "msg",
+       "levelKey": "",
+       "nameKey": "",
+       "timeKey": "",
+       "callerKey": "",
+       "stacktraceKey": "",
+       "callstackKey": "",
+       "errorKey": "",
+       "timeEncoder": "iso8601",
+       "fileKey": "",
+       "levelEncoder": "capital",
+       "durationEncoder": "second",
+       "callerEncoder": "full",
+       "nameEncoder": "full"
+     },
+    "maxsize": 1024,
+    "maxage": 7,
+    "maxbackups": 3,
+    "localtime": true,
+    "compress": true
+   }`)
+	EventLogger, EventLoggerConfig, _ = NewZapLoggerWithBytes(EventLoggerConfigBytes, JSON)
+
+	LumberjackConfig = NewLumberjackConfigDefault()
 )
 
 // Config file type which support json, yaml, toml and hcl
@@ -49,6 +83,52 @@ func (fileType FileType) String() string {
 	}
 
 	return names[fileType]
+}
+
+func NewZapEventConfig() *zap.Config {
+	_, config, _ := NewZapLoggerWithBytes(EventLoggerConfigBytes, JSON)
+	return config
+}
+
+// Create new default lumberjack config
+func NewLumberjackConfigDefault() *lumberjack.Logger {
+	return &lumberjack.Logger{
+		MaxSize:    1,
+		MaxAge:     7,
+		MaxBackups: 3,
+		LocalTime:  true,
+		Compress:   true,
+	}
+}
+
+// Create new stdout encoder config
+func NewZapStdoutEncoderConfig() *zapcore.EncoderConfig {
+	return &zapcore.EncoderConfig{
+		TimeKey:        "ts",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.StringDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
+}
+
+// Create new stdout config
+func NewZapStdoutConfig() *zap.Config {
+	return &zap.Config{
+		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development:       true,
+		Encoding:          "console",
+		DisableStacktrace: true,
+		EncoderConfig:     *NewZapStdoutEncoderConfig(),
+		OutputPaths:       []string{"stdout"},
+		ErrorOutputPaths:  []string{"stderr"},
+	}
 }
 
 // Init zap logger with byte array from content of config file
@@ -285,4 +365,69 @@ func toAbsoluteWorkingDir(filePath string) (string, error) {
 
 	// relative path, add current working directory
 	return path.Clean(path.Join(dir, filePath)), nil
+}
+
+// Transform wrapped zap config into zap.Config
+func TransformToZapConfig(wrap *ZapConfigWrap) *zap.Config {
+	level := zap.NewAtomicLevel()
+
+	if err := level.UnmarshalText([]byte(wrap.Level)); err != nil {
+		level.SetLevel(zapcore.InfoLevel)
+	}
+
+	config := &zap.Config{
+		Level:             level,
+		Development:       wrap.Development,
+		DisableCaller:     wrap.DisableCaller,
+		DisableStacktrace: wrap.DisableStacktrace,
+		Sampling:          wrap.Sampling,
+		Encoding:          wrap.Encoding,
+		EncoderConfig:     wrap.EncoderConfig,
+		OutputPaths:       wrap.OutputPaths,
+		ErrorOutputPaths:  wrap.ErrorOutputPaths,
+		InitialFields:     wrap.InitialFields,
+	}
+
+	return config
+}
+
+// A wrapper zap config which copied from zap.Config
+// This is used while parsing zap yaml config to zap.Config with viper
+// because Level would throw an error since it is not a type of string
+type ZapConfigWrap struct {
+	// Level is the minimum enabled logging level. Note that this is a dynamic
+	// level, so calling Config.Level.SetLevel will atomically change the log
+	// level of all loggers descended from this config.
+	Level string `json:"level" yaml:"level"`
+	// Development puts the logger in development mode, which changes the
+	// behavior of DPanicLevel and takes stacktraces more liberally.
+	Development bool `json:"development" yaml:"development"`
+	// DisableCaller stops annotating logs with the calling function's file
+	// name and line number. By default, all logs are annotated.
+	DisableCaller bool `json:"disableCaller" yaml:"disableCaller"`
+	// DisableStacktrace completely disables automatic stacktrace capturing. By
+	// default, stacktraces are captured for WarnLevel and above logs in
+	// development and ErrorLevel and above in production.
+	DisableStacktrace bool `json:"disableStacktrace" yaml:"disableStacktrace"`
+	// Sampling sets a sampling policy. A nil SamplingConfig disables sampling.
+	Sampling *zap.SamplingConfig `json:"sampling" yaml:"sampling"`
+	// Encoding sets the logger's encoding. Valid values are "json" and
+	// "console", as well as any third-party encodings registered via
+	// RegisterEncoder.
+	Encoding string `json:"encoding" yaml:"encoding"`
+	// EncoderConfig sets options for the chosen encoder. See
+	// zapcore.EncoderConfig for details.
+	EncoderConfig zapcore.EncoderConfig `json:"encoderConfig" yaml:"encoderConfig"`
+	// OutputPaths is a list of URLs or file paths to write logging output to.
+	// See Open for details.
+	OutputPaths []string `json:"outputPaths" yaml:"outputPaths"`
+	// ErrorOutputPaths is a list of URLs to write internal logger errors to.
+	// The default is standard error.
+	//
+	// Note that this setting only affects internal errors; for sample code that
+	// sends error-level logs to a different location from info- and debug-level
+	// logs, see the package-level AdvancedConfiguration example.
+	ErrorOutputPaths []string `json:"errorOutputPaths" yaml:"errorOutputPaths"`
+	// InitialFields is a collection of fields to add to the root logger.
+	InitialFields map[string]interface{} `json:"initialFields" yaml:"initialFields"`
 }

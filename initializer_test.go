@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_logger
+package rklogger
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ func TestConfigFileType_String_Overflow_RightBoundary(t *testing.T) {
 
 // With nil byte array
 func TestNewZapLoggerWithBytes_With_NilByteArray(t *testing.T) {
-	logger, config, err := NewZapLoggerWithBytes(nil, YAML, nil)
+	logger, config, err := NewZapLoggerWithBytes(nil, YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -40,7 +40,7 @@ func TestNewZapLoggerWithBytes_With_NilByteArray(t *testing.T) {
 
 // With empty byte array
 func TestNewZapLoggerWithBytes_With_EmptyByteArray(t *testing.T) {
-	logger, config, err := NewZapLoggerWithBytes(make([]byte, 0, 0), YAML, nil)
+	logger, config, err := NewZapLoggerWithBytes(make([]byte, 0, 0), YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -49,7 +49,7 @@ func TestNewZapLoggerWithBytes_With_EmptyByteArray(t *testing.T) {
 // With invalid json
 func TestNewZapLoggerWithBytes_With_InvalidJson(t *testing.T) {
 	invalidJson := `{"key":"value"`
-	logger, config, err := NewZapLoggerWithBytes([]byte(invalidJson), JSON, nil)
+	logger, config, err := NewZapLoggerWithBytes([]byte(invalidJson), JSON)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -58,7 +58,7 @@ func TestNewZapLoggerWithBytes_With_InvalidJson(t *testing.T) {
 // With invalid yaml
 func TestNewZapLoggerWithBytes_With_InvalidYaml(t *testing.T) {
 	invalidYaml := `"key"="value"`
-	logger, config, err := NewZapLoggerWithBytes([]byte(invalidYaml), YAML, nil)
+	logger, config, err := NewZapLoggerWithBytes([]byte(invalidYaml), YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -67,24 +67,7 @@ func TestNewZapLoggerWithBytes_With_InvalidYaml(t *testing.T) {
 // With unmatched type
 func TestNewZapLoggerWithBytes_With_InvalidType(t *testing.T) {
 	json := `{"key":"value"}`
-	logger, config, err := NewZapLoggerWithBytes([]byte(json), 10, nil)
-	assert.Nil(t, logger)
-	assert.Nil(t, config)
-	assert.NotNil(t, err)
-}
-
-// With unmatched type
-func TestNewZapLoggerWithBytes_With_UnmatchedType(t *testing.T) {
-	json := `{"key":"value"}`
-	logger, config, err := NewZapLoggerWithBytes([]byte(json), YAML, nil)
-	assert.Nil(t, logger)
-	assert.Nil(t, config)
-	assert.NotNil(t, err)
-}
-
-// With invalid zap config
-func TestNewZapLoggerWithBytes_With_InvalidZapConfig(t *testing.T) {
-	logger, config, err := NewZapLoggerWithBytes([]byte(`{}`), JSON, nil)
+	logger, config, err := NewZapLoggerWithBytes([]byte(json), 10)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -117,14 +100,14 @@ func TestNewZapLoggerWithBytes_HappyCase(t *testing.T) {
             "initial": "3",
             "thereafter": "10"
         }
-      }
+      },
       "maxsize": 1,
       "maxage": 7,
       "maxbackups": 3,
       "localtime": true,
       "compress": true
     }`)
-	logger, config, err := NewZapLoggerWithBytes(bytes, JSON, nil)
+	logger, config, err := NewZapLoggerWithBytes(bytes, JSON)
 	assert.NotNil(t, logger)
 	assert.NotNil(t, config)
 	assert.Nil(t, err)
@@ -132,7 +115,7 @@ func TestNewZapLoggerWithBytes_HappyCase(t *testing.T) {
 
 // With empty file path
 func TestNewZapLoggerWithConfPath_With_EmptyString(t *testing.T) {
-	logger, config, err := NewZapLoggerWithConfPath("", YAML, nil)
+	logger, config, err := NewZapLoggerWithConfPath("", YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -140,7 +123,7 @@ func TestNewZapLoggerWithConfPath_With_EmptyString(t *testing.T) {
 
 // With invalid file path
 func TestNewZapLoggerWithConfPath_With_InvalidFilePath(t *testing.T) {
-	logger, config, err := NewZapLoggerWithConfPath("///invalid", YAML, nil)
+	logger, config, err := NewZapLoggerWithConfPath("///invalid", YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -148,7 +131,7 @@ func TestNewZapLoggerWithConfPath_With_InvalidFilePath(t *testing.T) {
 
 // With non exist file path
 func TestNewZapLoggerWithConfPath_With_NonExistFilePath(t *testing.T) {
-	logger, config, err := NewZapLoggerWithConfPath("/NonExistExpected.invalid", YAML, nil)
+	logger, config, err := NewZapLoggerWithConfPath("/NonExistExpected.invalid", YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
 	assert.NotNil(t, err)
@@ -160,7 +143,7 @@ func TestNewZapLoggerWithConfPath_HappyCase(t *testing.T) {
 	dir, err := os.Getwd()
 	assert.Nil(t, err)
 
-	logger, config, err := NewZapLoggerWithConfPath(dir+"/assets/zap.yaml", YAML, nil)
+	logger, config, err := NewZapLoggerWithConfPath(dir+"/assets/zap.yaml", YAML)
 	assert.NotNil(t, logger)
 	assert.NotNil(t, config)
 	assert.Nil(t, err)
@@ -179,7 +162,7 @@ func TestNewZapLoggerWithConf_HappyCae(t *testing.T) {
 	dir, err := os.Getwd()
 	assert.Nil(t, err)
 	// create zap config with existing config file
-	_, config, _ := NewZapLoggerWithConfPath(dir+"/assets/zap.yaml", YAML, nil)
+	_, config, _ := NewZapLoggerWithConfPath(dir+"/assets/zap.yaml", YAML)
 
 	logger, err := NewZapLoggerWithConf(config, nil)
 	assert.NotNil(t, logger)

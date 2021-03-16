@@ -29,7 +29,7 @@ func NewLumberjackLoggerWithBytesExample() {
      "localtime": true,
      "compress": true
     }`)
-	_, err := rk_logger.NewLumberjackLoggerWithBytes(bytes, rk_logger.JSON)
+	_, err := rklogger.NewLumberjackLoggerWithBytes(bytes, rklogger.JSON)
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +39,7 @@ func NewLumberjackLoggerWithConfPathExample() {
 	// get current working directory
 	dir, _ := os.Getwd()
 	// init lumberjack logger
-	_, err := rk_logger.NewLumberjackLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/lumberjack.yaml")), rk_logger.YAML)
+	_, err := rklogger.NewLumberjackLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/lumberjack.yaml")), rklogger.YAML)
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +65,7 @@ func NewZapLoggerWithConfExample() {
 		EncoderConfig: encodingConfig,
 		OutputPaths:   []string{"stdout", "logs/rk-logger.log"},
 	}
-	logger, _ := rk_logger.NewZapLoggerWithConf(config, &lumberjack.Logger{})
+	logger, _ := rklogger.NewZapLoggerWithConf(config, &lumberjack.Logger{})
 	logger.Info("NewZapLoggerWithConfExample")
 }
 
@@ -73,7 +73,7 @@ func NewZapLoggerWithConfPathExample() {
 	// get current working directory
 	dir, _ := os.Getwd()
 	// init zap logger
-	logger, _, _ := rk_logger.NewZapLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/zap.yaml")), rk_logger.YAML)
+	logger, _, _ := rklogger.NewZapLoggerWithConfPath(path.Clean(path.Join(dir, "/assets/zap.yaml")), rklogger.YAML)
 	// use it
 	logger.Info("NewZapLoggerWithConfPathExample")
 }
@@ -112,7 +112,7 @@ func NewZapLoggerWithBytesExample() {
      "compress": true
     }`)
 
-	logger, _, err := rk_logger.NewZapLoggerWithBytes(zapBytes, rk_logger.JSON)
+	logger, _, err := rklogger.NewZapLoggerWithBytes(zapBytes, rklogger.JSON)
 
 	if err != nil {
 		panic(err)
