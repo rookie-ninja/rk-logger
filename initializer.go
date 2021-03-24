@@ -369,6 +369,10 @@ func toAbsoluteWorkingDir(filePath string) (string, error) {
 
 // Transform wrapped zap config into zap.Config
 func TransformToZapConfig(wrap *ZapConfigWrap) *zap.Config {
+	if wrap == nil {
+		return nil
+	}
+
 	level := zap.NewAtomicLevel()
 
 	if err := level.UnmarshalText([]byte(wrap.Level)); err != nil {

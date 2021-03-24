@@ -31,7 +31,7 @@ func TestConfigFileType_String_Overflow_RightBoundary(t *testing.T) {
 }
 
 // With nil byte array
-func TestNewZapLoggerWithBytes_With_NilByteArray(t *testing.T) {
+func TestNewZapLoggerWithBytes_WithNilByteArray(t *testing.T) {
 	logger, config, err := NewZapLoggerWithBytes(nil, YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
@@ -39,7 +39,7 @@ func TestNewZapLoggerWithBytes_With_NilByteArray(t *testing.T) {
 }
 
 // With empty byte array
-func TestNewZapLoggerWithBytes_With_EmptyByteArray(t *testing.T) {
+func TestNewZapLoggerWithBytes_WithEmptyByteArray(t *testing.T) {
 	logger, config, err := NewZapLoggerWithBytes(make([]byte, 0, 0), YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
@@ -47,7 +47,7 @@ func TestNewZapLoggerWithBytes_With_EmptyByteArray(t *testing.T) {
 }
 
 // With invalid json
-func TestNewZapLoggerWithBytes_With_InvalidJson(t *testing.T) {
+func TestNewZapLoggerWithBytes_WithInvalidJson(t *testing.T) {
 	invalidJson := `{"key":"value"`
 	logger, config, err := NewZapLoggerWithBytes([]byte(invalidJson), JSON)
 	assert.Nil(t, logger)
@@ -56,7 +56,7 @@ func TestNewZapLoggerWithBytes_With_InvalidJson(t *testing.T) {
 }
 
 // With invalid yaml
-func TestNewZapLoggerWithBytes_With_InvalidYaml(t *testing.T) {
+func TestNewZapLoggerWithBytes_WithInvalidYaml(t *testing.T) {
 	invalidYaml := `"key"="value"`
 	logger, config, err := NewZapLoggerWithBytes([]byte(invalidYaml), YAML)
 	assert.Nil(t, logger)
@@ -65,7 +65,7 @@ func TestNewZapLoggerWithBytes_With_InvalidYaml(t *testing.T) {
 }
 
 // With unmatched type
-func TestNewZapLoggerWithBytes_With_InvalidType(t *testing.T) {
+func TestNewZapLoggerWithBytes_WithInvalidType(t *testing.T) {
 	json := `{"key":"value"}`
 	logger, config, err := NewZapLoggerWithBytes([]byte(json), 10)
 	assert.Nil(t, logger)
@@ -114,7 +114,7 @@ func TestNewZapLoggerWithBytes_HappyCase(t *testing.T) {
 }
 
 // With empty file path
-func TestNewZapLoggerWithConfPath_With_EmptyString(t *testing.T) {
+func TestNewZapLoggerWithConfPath_WithEmptyString(t *testing.T) {
 	logger, config, err := NewZapLoggerWithConfPath("", YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
@@ -122,7 +122,7 @@ func TestNewZapLoggerWithConfPath_With_EmptyString(t *testing.T) {
 }
 
 // With invalid file path
-func TestNewZapLoggerWithConfPath_With_InvalidFilePath(t *testing.T) {
+func TestNewZapLoggerWithConfPath_WithInvalidFilePath(t *testing.T) {
 	logger, config, err := NewZapLoggerWithConfPath("///invalid", YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
@@ -130,7 +130,7 @@ func TestNewZapLoggerWithConfPath_With_InvalidFilePath(t *testing.T) {
 }
 
 // With non exist file path
-func TestNewZapLoggerWithConfPath_With_NonExistFilePath(t *testing.T) {
+func TestNewZapLoggerWithConfPath_WithNonExistFilePath(t *testing.T) {
 	logger, config, err := NewZapLoggerWithConfPath("/NonExistExpected.invalid", YAML)
 	assert.Nil(t, logger)
 	assert.Nil(t, config)
@@ -150,7 +150,7 @@ func TestNewZapLoggerWithConfPath_HappyCase(t *testing.T) {
 }
 
 // With nil config
-func TestNewZapLoggerWithConf_With_NilConfig(t *testing.T) {
+func TestNewZapLoggerWithConf_WithNilConfig(t *testing.T) {
 	logger, err := NewZapLoggerWithConf(nil, nil)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
@@ -170,28 +170,28 @@ func TestNewZapLoggerWithConf_HappyCae(t *testing.T) {
 }
 
 // With nil lumberjack config
-func TestNewLumberjackLoggerWithBytes_With_NilByteArray(t *testing.T) {
+func TestNewLumberjackLoggerWithBytes_WithNilByteArray(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithBytes(nil, YAML)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
 }
 
 // With empty lumberjack config
-func TestNewLumberjackLoggerWithBytes_With_EmptyByteArray(t *testing.T) {
+func TestNewLumberjackLoggerWithBytes_WithEmptyByteArray(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithBytes(make([]byte, 0, 0), YAML)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
 }
 
 // With invalid yaml
-func TestNewLumberjackLoggerWithBytes_With_InvalidYaml(t *testing.T) {
+func TestNewLumberjackLoggerWithBytes_WithInvalidYaml(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithBytes([]byte("key=value"), YAML)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
 }
 
 // With invalid json
-func TestNewLumberjackLoggerWithBytes_With_InvalidJson(t *testing.T) {
+func TestNewLumberjackLoggerWithBytes_WithInvalidJson(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithBytes([]byte(`{"key":"value"`), JSON)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
@@ -213,21 +213,21 @@ func TestNewLumberjackLoggerWithBytes_HappyCase(t *testing.T) {
 }
 
 // With empty file path
-func TestNewLumberjackLoggerWithConfPath_With_EmptyString(t *testing.T) {
+func TestNewLumberjackLoggerWithConfPath_WithEmptyString(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithConfPath("", YAML)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
 }
 
 // With invalid file path
-func TestNewLumberjackLoggerWithConfPath_With_InvalidFilePath(t *testing.T) {
+func TestNewLumberjackLoggerWithConfPath_WithInvalidFilePath(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithConfPath("///invalid", YAML)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
 }
 
 // With non exist file path
-func TestNewLumberjackLoggerWithConfPath_With_NonExistFilePath(t *testing.T) {
+func TestNewLumberjackLoggerWithConfPath_WithNonExistFilePath(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithConfPath("/NonExistExpected.invalid", YAML)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
@@ -245,12 +245,12 @@ func TestNewLumberjackLoggerWithConfPath_HappyCase(t *testing.T) {
 }
 
 // With invalid file path
-func TestValidateFilePath_With_InvalidFilePath(t *testing.T) {
+func TestValidateFilePath_WithInvalidFilePath(t *testing.T) {
 	assert.NotNil(t, validateFilePath("///invalid"))
 }
 
 // With non exist file path
-func TestValidateFilePath_With_NonExistFilePath(t *testing.T) {
+func TestValidateFilePath_WithNonExistFilePath(t *testing.T) {
 	assert.NotNil(t, validateFilePath("/NonExistExpected.invalid"))
 }
 
@@ -262,27 +262,63 @@ func TestValidateFilePath_HappyCase(t *testing.T) {
 }
 
 // With json encoder
-func TestGenerateEncoder_With_JsonEncoder(t *testing.T) {
+func TestGenerateEncoder_WithJsonEncoder(t *testing.T) {
 	config := &zap.Config{Encoding: "json"}
 	assert.NotNil(t, generateEncoder(config))
 }
 
 // With console encoder
-func TestGenerateEncoder_With_ConsoleEncoder(t *testing.T) {
+func TestGenerateEncoder_WithConsoleEncoder(t *testing.T) {
 	config := &zap.Config{Encoding: "console"}
 	assert.NotNil(t, generateEncoder(config))
 }
 
 // Absolute path
-func TestToAbsoluteWorkingDir_With_AbsolutePath(t *testing.T) {
+func TestToAbsoluteWorkingDir_WithAbsolutePath(t *testing.T) {
 	abs, err := toAbsoluteWorkingDir("/tmp")
 	assert.Nil(t, err)
 	assert.True(t, path.IsAbs(abs))
 }
 
 // Relative path
-func TestToAbsoluteWorkingDir_With_RelativePath(t *testing.T) {
+func TestToAbsoluteWorkingDir_WithRelativePath(t *testing.T) {
 	abs, err := toAbsoluteWorkingDir("logs/rk-logger.log")
 	assert.Nil(t, err)
 	assert.True(t, path.IsAbs(abs))
+}
+
+func TestTransformToZapConfig_WithNilInput(t *testing.T) {
+	assert.Nil(t, TransformToZapConfig(nil))
+}
+
+func TestTransformToZapConfig_WithInvalidLevel(t *testing.T) {
+	wrap := &ZapConfigWrap{
+		Level: "invalid",
+	}
+
+	zapConfig := TransformToZapConfig(wrap)
+	assert.NotNil(t, zapConfig)
+	assert.Equal(t, zap.InfoLevel, zapConfig.Level.Level())
+}
+
+func TestTransformToZapConfig_HappyCase(t *testing.T) {
+	wrap := &ZapConfigWrap{
+		Level: "info",
+		Development: true,
+		DisableCaller: true,
+		DisableStacktrace: true,
+		Encoding: "json",
+		OutputPaths: []string{"ut.log"},
+		ErrorOutputPaths: []string{"ut.log"},
+	}
+
+	zapConfig := TransformToZapConfig(wrap)
+	assert.NotNil(t, zapConfig)
+	assert.Equal(t, zap.InfoLevel, zapConfig.Level.Level())
+	assert.True(t, zapConfig.Development)
+	assert.True(t, zapConfig.DisableCaller)
+	assert.True(t, zapConfig.DisableStacktrace)
+	assert.Equal(t, "json", zapConfig.Encoding)
+	assert.Contains(t, zapConfig.OutputPaths, "ut.log")
+	assert.Contains(t, zapConfig.ErrorOutputPaths, "ut.log")
 }
