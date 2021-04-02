@@ -1,3 +1,18 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [rk-logger](#rk-logger)
+  - [Installation](#installation)
+  - [Quick Start](#quick-start)
+    - [With Config file path](#with-config-file-path)
+    - [With Config as byte array](#with-config-as-byte-array)
+    - [With Config](#with-config)
+    - [Development Status: Stable](#development-status-stable)
+    - [Contributing](#contributing)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # rk-logger
 Log initializer written with golang.
 Currently, support zap logger as default logger and lumberjack as log rotation

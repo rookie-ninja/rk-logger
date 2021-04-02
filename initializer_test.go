@@ -303,13 +303,13 @@ func TestTransformToZapConfig_WithInvalidLevel(t *testing.T) {
 
 func TestTransformToZapConfig_HappyCase(t *testing.T) {
 	wrap := &ZapConfigWrap{
-		Level: "info",
-		Development: true,
-		DisableCaller: true,
+		Level:             "info",
+		Development:       true,
+		DisableCaller:     true,
 		DisableStacktrace: true,
-		Encoding: "json",
-		OutputPaths: []string{"ut.log"},
-		ErrorOutputPaths: []string{"ut.log"},
+		Encoding:          "json",
+		OutputPaths:       []string{"ut.log"},
+		ErrorOutputPaths:  []string{"ut.log"},
 	}
 
 	zapConfig := TransformToZapConfig(wrap)

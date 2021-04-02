@@ -93,7 +93,7 @@ func NewZapEventConfig() *zap.Config {
 // Create new default lumberjack config
 func NewLumberjackConfigDefault() *lumberjack.Logger {
 	return &lumberjack.Logger{
-		MaxSize:    1,
+		MaxSize:    1024,
 		MaxAge:     7,
 		MaxBackups: 3,
 		LocalTime:  true,
