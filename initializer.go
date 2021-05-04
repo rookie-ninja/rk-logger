@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"reflect"
 )
 
 type FileType int
@@ -395,6 +396,86 @@ func TransformToZapConfig(wrap *ZapConfigWrap) *zap.Config {
 	return config
 }
 
+// Unmarshal zap.config
+func TransformToZapConfigWrap(config *zap.Config) *ZapConfigWrap {
+	return &ZapConfigWrap{
+		Level:             config.Level.String(),
+		Development:       config.Development,
+		DisableCaller:     config.DisableCaller,
+		DisableStacktrace: config.DisableStacktrace,
+		Sampling:          config.Sampling,
+		Encoding:          config.Encoding,
+		EncoderConfig:     config.EncoderConfig,
+		OutputPaths:       config.OutputPaths,
+		ErrorOutputPaths:  config.ErrorOutputPaths,
+		InitialFields:     config.InitialFields,
+	}
+}
+
+// Marshal zapcore.NameEncoder
+func marshalZapNameEncoder(encoder zapcore.NameEncoder) string {
+	switch encoder {
+	default:
+		return "full"
+	}
+}
+
+// Marshal zapcore.CallerEncoder
+func marshalZapCallerEncoder(encoder zapcore.CallerEncoder) string {
+	switch reflect.ValueOf(encoder).Pointer() {
+	case reflect.ValueOf(zapcore.FullCallerEncoder).Pointer():
+		return "full"
+	default:
+		return "short"
+	}
+}
+
+// Marshal zapcore.DurationEncoder
+func marshalZapDurationEncoder(encoder zapcore.DurationEncoder) string {
+	switch reflect.ValueOf(encoder).Pointer() {
+	case reflect.ValueOf(zapcore.StringDurationEncoder).Pointer():
+		return "string"
+	case reflect.ValueOf(zapcore.NanosDurationEncoder).Pointer():
+		return "nanos"
+	case reflect.ValueOf(zapcore.MillisDurationEncoder).Pointer():
+		return "ms"
+	default:
+		return "secs"
+	}
+}
+
+// Marshal zapcore.TimeEncoder
+func marshalZapTimeEncoder(encoder zapcore.TimeEncoder) string {
+	switch reflect.ValueOf(encoder).Pointer() {
+	case reflect.ValueOf(zapcore.RFC3339NanoTimeEncoder).Pointer():
+		return "RFC3339Nano"
+	case reflect.ValueOf(zapcore.RFC3339TimeEncoder).Pointer():
+		return "RFC3339"
+	case reflect.ValueOf(zapcore.ISO8601TimeEncoder).Pointer():
+		return "ISO8601"
+	case reflect.ValueOf(zapcore.EpochMillisTimeEncoder).Pointer():
+		return "millis"
+	case reflect.ValueOf(zapcore.EpochNanosTimeEncoder).Pointer():
+		return "nanos"
+	default:
+		return "seconds"
+	}
+}
+
+// Marshal zapcore.LevelEncoder
+func marshalZapLevelEncoder(encoder zapcore.LevelEncoder) string {
+	switch reflect.ValueOf(encoder).Pointer() {
+	case reflect.ValueOf(zapcore.CapitalLevelEncoder).Pointer():
+		return "capital"
+	case reflect.ValueOf(zapcore.CapitalColorLevelEncoder).Pointer():
+		return "capitalColor"
+	case reflect.ValueOf(zapcore.LowercaseColorLevelEncoder).Pointer():
+		return "color"
+	default:
+		return "lower"
+	}
+}
+
 // A wrapper zap config which copied from zap.Config
 // This is used while parsing zap yaml config to zap.Config with viper
 // because Level would throw an error since it is not a type of string
@@ -434,4 +515,76 @@ type ZapConfigWrap struct {
 	ErrorOutputPaths []string `json:"errorOutputPaths" yaml:"errorOutputPaths"`
 	// InitialFields is a collection of fields to add to the root logger.
 	InitialFields map[string]interface{} `json:"initialFields" yaml:"initialFields"`
+}
+
+// Marshal ZapConfigWrap
+func (wrap *ZapConfigWrap) MarshalJSON() ([]byte, error) {
+	encoderWrap := &ZapEncoderConfigWrap{
+		MessageKey:       wrap.EncoderConfig.MessageKey,
+		LevelKey:         wrap.EncoderConfig.LevelKey,
+		TimeKey:          wrap.EncoderConfig.TimeKey,
+		NameKey:          wrap.EncoderConfig.NameKey,
+		CallerKey:        wrap.EncoderConfig.CallerKey,
+		FunctionKey:      wrap.EncoderConfig.FunctionKey,
+		StacktraceKey:    wrap.EncoderConfig.StacktraceKey,
+		LineEnding:       wrap.EncoderConfig.LineEnding,
+		EncodeLevel:      marshalZapLevelEncoder(wrap.EncoderConfig.EncodeLevel),
+		EncodeTime:       marshalZapTimeEncoder(wrap.EncoderConfig.EncodeTime),
+		EncodeDuration:   marshalZapDurationEncoder(wrap.EncoderConfig.EncodeDuration),
+		EncodeCaller:     marshalZapCallerEncoder(wrap.EncoderConfig.EncodeCaller),
+		EncodeName:       marshalZapNameEncoder(wrap.EncoderConfig.EncodeName),
+		ConsoleSeparator: wrap.EncoderConfig.ConsoleSeparator,
+	}
+
+	// Create an inner config since zap.EncoderConfig would throw an error while marshalling
+	type innerZapConfig struct {
+		Level             string                 `json:"level" yaml:"level"`
+		Development       bool                   `json:"development" yaml:"development"`
+		DisableCaller     bool                   `json:"disableCaller" yaml:"disableCaller"`
+		DisableStacktrace bool                   `json:"disableStacktrace" yaml:"disableStacktrace"`
+		Sampling          *zap.SamplingConfig    `json:"sampling" yaml:"sampling"`
+		Encoding          string                 `json:"encoding" yaml:"encoding"`
+		EncoderConfig     *ZapEncoderConfigWrap  `json:"encoderConfig" yaml:"encoderConfig"`
+		OutputPaths       []string               `json:"outputPaths" yaml:"outputPaths"`
+		ErrorOutputPaths  []string               `json:"errorOutputPaths" yaml:"errorOutputPaths"`
+		InitialFields     map[string]interface{} `json:"initialFields" yaml:"initialFields"`
+	}
+
+	return json.Marshal(&innerZapConfig{
+		Level:             wrap.Level,
+		Development:       wrap.Development,
+		DisableCaller:     wrap.DisableCaller,
+		DisableStacktrace: wrap.DisableStacktrace,
+		Sampling:          wrap.Sampling,
+		Encoding:          wrap.Encoding,
+		EncoderConfig:     encoderWrap,
+		OutputPaths:       wrap.OutputPaths,
+		ErrorOutputPaths:  wrap.ErrorOutputPaths,
+		InitialFields:     wrap.InitialFields,
+	})
+}
+
+// Unmarshal ZapConfigWrap
+func (wrap *ZapConfigWrap) UnmarshalJSON([]byte) error {
+	return nil
+}
+
+// A wrapper zap EncoderConfig which copied from zapcore.EncoderConfig
+// This is used while parsing zap yaml config to zapcore.EncoderConfig with viper
+// because Level would throw an error since it is not a type of string
+type ZapEncoderConfigWrap struct {
+	MessageKey       string `json:"messageKey" yaml:"messageKey"`
+	LevelKey         string `json:"levelKey" yaml:"levelKey"`
+	TimeKey          string `json:"timeKey" yaml:"timeKey"`
+	NameKey          string `json:"nameKey" yaml:"nameKey"`
+	CallerKey        string `json:"callerKey" yaml:"callerKey"`
+	FunctionKey      string `json:"functionKey" yaml:"functionKey"`
+	StacktraceKey    string `json:"stacktraceKey" yaml:"stacktraceKey"`
+	LineEnding       string `json:"lineEnding" yaml:"lineEnding"`
+	EncodeLevel      string `json:"levelEncoder" yaml:"levelEncoder"`
+	EncodeTime       string `json:"timeEncoder" yaml:"timeEncoder"`
+	EncodeDuration   string `json:"durationEncoder" yaml:"durationEncoder"`
+	EncodeCaller     string `json:"callerEncoder" yaml:"callerEncoder"`
+	EncodeName       string `json:"nameEncoder" yaml:"nameEncoder"`
+	ConsoleSeparator string `json:"consoleSeparator" yaml:"consoleSeparator"`
 }
