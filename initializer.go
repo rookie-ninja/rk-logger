@@ -112,7 +112,7 @@ func NewZapStdoutEncoderConfig() *zapcore.EncoderConfig {
 		MessageKey:     "msg",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.ISO8601TimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
@@ -232,7 +232,7 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	// Iterate output path and attach to lumberjack
 	// Remember, each logger will use same lumberjack logger configuration
 	for i := range config.OutputPaths {
-		if config.OutputPaths[i] != "stdout" {
+		if config.OutputPaths[i] != "stdout" && config.OutputPaths[i] != "stderr" {
 			lumberNew := &lumberjack.Logger{
 				Filename:   config.OutputPaths[i],
 				MaxAge:     lumber.MaxAge,
@@ -244,7 +244,7 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 
 			sync = append(sync, zapcore.AddSync(lumberNew))
 		} else {
-			stdout, close, err := zap.Open("stdout")
+			stdout, close, err := zap.Open(config.OutputPaths[i])
 			// just close the syncer if err occurs
 			if err != nil {
 				close()
@@ -266,12 +266,32 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	}
 
 	// add error output sync
+	errSink := make([]zapcore.WriteSyncer, 0, 0)
 	if len(config.ErrorOutputPaths) > 0 {
-		errSink, _, err := zap.Open(config.ErrorOutputPaths...)
-		if err != nil {
-			return nil, err
+		for i := range config.ErrorOutputPaths {
+			if config.ErrorOutputPaths[i] != "stdout" && config.ErrorOutputPaths[i] != "stderr" {
+				lumberNew := &lumberjack.Logger{
+					Filename:   config.ErrorOutputPaths[i],
+					MaxAge:     lumber.MaxAge,
+					MaxBackups: lumber.MaxBackups,
+					MaxSize:    lumber.MaxSize,
+					Compress:   lumber.Compress,
+					LocalTime:  lumber.LocalTime,
+				}
+
+				errSink = append(errSink, zapcore.AddSync(lumberNew))
+			} else {
+				stdout, close, err := zap.Open(config.ErrorOutputPaths[i])
+				// just close the syncer if err occurs
+				if err != nil {
+					close()
+				} else {
+					errSink = append(errSink, stdout)
+				}
+			}
 		}
-		opts = append(opts, zap.ErrorOutput(errSink))
+
+		opts = append(opts, zap.ErrorOutput(zap.CombineWriteSyncers(errSink...)))
 	}
 
 	return zap.New(core, opts...).With(initialFields...), nil
