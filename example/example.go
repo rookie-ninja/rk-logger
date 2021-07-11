@@ -15,10 +15,10 @@ import (
 
 func main() {
 	NewZapLoggerWithBytesExample()
-	NewZapLoggerWithConfPathExample()
-	NewZapLoggerWithConfExample()
-	NewLumberjackLoggerWithBytesExample()
-	NewLumberjackLoggerWithConfPathExample()
+	//NewZapLoggerWithConfPathExample()
+	//NewZapLoggerWithConfExample()
+	//NewLumberjackLoggerWithBytesExample()
+	//NewLumberjackLoggerWithConfPathExample()
 }
 
 func NewLumberjackLoggerWithBytesExample() {
