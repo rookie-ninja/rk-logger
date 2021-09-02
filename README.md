@@ -1,3 +1,14 @@
+# rk-logger
+[![build](https://github.com/rookie-ninja/rk-logger/actions/workflows/ci.yml/badge.svg)](https://github.com/rookie-ninja/rk-logger/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/rookie-ninja/rk-logger/branch/master/graph/badge.svg?token=QQ5WZ5JBD4)](https://codecov.io/gh/rookie-ninja/rk-logger)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Log initializer written with golang.
+Currently, support zap logger as default logger and lumberjack as log rotation
+
+- [zap](https://github.com/uber-go/zap)
+- [lumberjack](https://github.com/natefinch/lumberjack)
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -12,17 +23,6 @@
     - [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# rk-logger
-[![build](https://github.com/rookie-ninja/rk-logger/actions/workflows/ci.yml/badge.svg)](https://github.com/rookie-ninja/rk-logger/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/rookie-ninja/rk-logger/branch/master/graph/badge.svg?token=QQ5WZ5JBD4)](https://codecov.io/gh/rookie-ninja/rk-logger)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-Log initializer written with golang.
-Currently, support zap logger as default logger and lumberjack as log rotation
-
-- [zap](https://github.com/uber-go/zap)
-- [lumberjack](https://github.com/natefinch/lumberjack)
 
 ## Installation
 `go get -u github.com/rookie-ninja/rk-logger`
