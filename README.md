@@ -16,6 +16,7 @@
 # rk-logger
 [![build](https://github.com/rookie-ninja/rk-logger/actions/workflows/ci.yml/badge.svg)](https://github.com/rookie-ninja/rk-logger/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rookie-ninja/rk-logger/branch/master/graph/badge.svg?token=QQ5WZ5JBD4)](https://codecov.io/gh/rookie-ninja/rk-logger)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Log initializer written with golang.
 Currently, support zap logger as default logger and lumberjack as log rotation
