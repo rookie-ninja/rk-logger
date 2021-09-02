@@ -164,9 +164,7 @@ We encourage and support an active, healthy community of contributors &mdash;
 including you! Details are in the [contribution guide](CONTRIBUTING.md) and
 the [code of conduct](CODE_OF_CONDUCT.md). The rk maintainers keep an eye on
 issues and pull requests, but you can also report any negative conduct to
-dongxuny@gmail.com. That email list is a private, safe space; even the zap
-maintainers don't have access, so don't hesitate to hold us to a high
-standard.
+lark@rkdev.info.
 
 <hr>
 
