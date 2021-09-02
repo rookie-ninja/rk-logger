@@ -14,6 +14,8 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # rk-logger
+[![codecov](https://codecov.io/gh/rookie-ninja/rk-logger/branch/master/graph/badge.svg?token=QQ5WZ5JBD4)](https://codecov.io/gh/rookie-ninja/rk-logger)
+
 Log initializer written with golang.
 Currently, support zap logger as default logger and lumberjack as log rotation
 
