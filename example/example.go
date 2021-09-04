@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package main contains example of rklogger usages.
 package main
 
 import (
@@ -13,6 +15,7 @@ import (
 	"path"
 )
 
+// Main entrance.
 func main() {
 	NewZapLoggerWithBytesExample()
 	//NewZapLoggerWithConfPathExample()
@@ -21,6 +24,7 @@ func main() {
 	//NewLumberjackLoggerWithConfPathExample()
 }
 
+// Create a new lumberjack instance with raw bytes.
 func NewLumberjackLoggerWithBytesExample() {
 	bytes := []byte(`{
      "maxsize": 1,
@@ -35,6 +39,7 @@ func NewLumberjackLoggerWithBytesExample() {
 	}
 }
 
+// Create a new lumberjack instance with config file.
 func NewLumberjackLoggerWithConfPathExample() {
 	// get current working directory
 	dir, _ := os.Getwd()
@@ -45,6 +50,7 @@ func NewLumberjackLoggerWithConfPathExample() {
 	}
 }
 
+// Create a new zap logger instance with zap config.
 func NewZapLoggerWithConfExample() {
 	encodingConfig := zapcore.EncoderConfig{
 		TimeKey:        "zap_timestamp",
@@ -69,6 +75,7 @@ func NewZapLoggerWithConfExample() {
 	logger.Info("NewZapLoggerWithConfExample")
 }
 
+// Create a new zap logger instance with config file.
 func NewZapLoggerWithConfPathExample() {
 	// get current working directory
 	dir, _ := os.Getwd()
@@ -78,6 +85,7 @@ func NewZapLoggerWithConfPathExample() {
 	logger.Info("NewZapLoggerWithConfPathExample")
 }
 
+// Create a new zap logger instance with raw bytes.
 func NewZapLoggerWithBytesExample() {
 	zapBytes := []byte(`{
       "level": "debug",
