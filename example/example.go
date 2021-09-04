@@ -24,7 +24,7 @@ func main() {
 	//NewLumberjackLoggerWithConfPathExample()
 }
 
-// Create a new lumberjack instance with raw bytes.
+// NewLumberjackLoggerWithBytesExample create a new lumberjack instance with raw bytes.
 func NewLumberjackLoggerWithBytesExample() {
 	bytes := []byte(`{
      "maxsize": 1,
@@ -39,7 +39,7 @@ func NewLumberjackLoggerWithBytesExample() {
 	}
 }
 
-// Create a new lumberjack instance with config file.
+// NewLumberjackLoggerWithConfPathExample create a new lumberjack instance with config file.
 func NewLumberjackLoggerWithConfPathExample() {
 	// get current working directory
 	dir, _ := os.Getwd()
@@ -50,7 +50,7 @@ func NewLumberjackLoggerWithConfPathExample() {
 	}
 }
 
-// Create a new zap logger instance with zap config.
+// NewZapLoggerWithConfExample create a new zap logger instance with zap config.
 func NewZapLoggerWithConfExample() {
 	encodingConfig := zapcore.EncoderConfig{
 		TimeKey:        "zap_timestamp",
@@ -75,7 +75,7 @@ func NewZapLoggerWithConfExample() {
 	logger.Info("NewZapLoggerWithConfExample")
 }
 
-// Create a new zap logger instance with config file.
+// NewZapLoggerWithConfPathExample create a new zap logger instance with config file.
 func NewZapLoggerWithConfPathExample() {
 	// get current working directory
 	dir, _ := os.Getwd()
@@ -85,7 +85,7 @@ func NewZapLoggerWithConfPathExample() {
 	logger.Info("NewZapLoggerWithConfPathExample")
 }
 
-// Create a new zap logger instance with raw bytes.
+// NewZapLoggerWithBytesExample create a new zap logger instance with raw bytes.
 func NewZapLoggerWithBytesExample() {
 	zapBytes := []byte(`{
       "level": "debug",

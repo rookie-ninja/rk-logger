@@ -20,9 +20,9 @@ import (
 )
 
 var (
-	// Default zap logger encoder config whose output path is stdout.
+	// StdoutEncoderConfig is default zap logger encoder config whose output path is stdout.
 	StdoutEncoderConfig = NewZapStdoutEncoderConfig()
-	// Default zap logger config whose output path is stdout.
+	// StdoutLoggerConfig is default zap logger config whose output path is stdout.
 	StdoutLoggerConfig = &zap.Config{
 		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
 		Development:       true,
@@ -32,12 +32,12 @@ var (
 		OutputPaths:       []string{"stdout"},
 		ErrorOutputPaths:  []string{"stderr"},
 	}
-	// Default zap logger whose output path is stdout.
+	// StdoutLogger is default zap logger whose output path is stdout.
 	StdoutLogger, _ = StdoutLoggerConfig.Build()
-	// Default zap noop logger.
+	// NoopLogger is default zap noop logger.
 	NoopLogger = zap.NewNop()
 
-	// Default zap logger which is used by EventLogger.
+	// EventLoggerConfigBytes is default zap logger which is used by EventLogger.
 	EventLoggerConfigBytes = []byte(`{
      "level": "info",
      "encoding": "console",
@@ -73,13 +73,13 @@ var (
 	LumberjackConfig = NewLumberjackConfigDefault()
 )
 
-// Config file type which support json and yaml currently.
-// JSON: https://www.json.org/
-// YAML: https://yaml.org/
+// FileType is a config file type which support json and yaml currently.
 type FileType int
 
 const (
+	// JSON: https://www.json.org/
 	JSON FileType = 0
+	// YAML: https://yaml.org/
 	YAML FileType = 1
 )
 
