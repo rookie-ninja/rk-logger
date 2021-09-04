@@ -7,6 +7,7 @@ package rklogger
 import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"os"
 	"path"
 	"testing"
@@ -28,6 +29,25 @@ func TestConfigFileType_String_Overflow_LeftBoundary(t *testing.T) {
 
 func TestConfigFileType_String_Overflow_RightBoundary(t *testing.T) {
 	assert.Equal(t, "UNKNOWN", FileType(4).String())
+}
+
+func TestNewZapEventConfig_HappyCase(t *testing.T) {
+	config := NewZapEventConfig()
+	assert.NotNil(t, config)
+}
+
+func TestNewZapStdoutConfig_HappyCase(t *testing.T) {
+	config := NewZapStdoutConfig()
+	assert.NotNil(t, config)
+	assert.Equal(t, zap.InfoLevel.String(), config.Level.String())
+	assert.True(t, config.Development)
+	assert.Equal(t, "console", config.Encoding)
+	assert.True(t, config.DisableStacktrace)
+	assert.NotNil(t, config.EncoderConfig)
+	assert.Len(t, config.OutputPaths, 1)
+	assert.Equal(t, "stdout", config.OutputPaths[0])
+	assert.Len(t, config.ErrorOutputPaths, 1)
+	assert.Equal(t, "stderr", config.ErrorOutputPaths[0])
 }
 
 // With nil byte array
@@ -156,6 +176,36 @@ func TestNewZapLoggerWithConf_WithNilConfig(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+// New lumberjack instance would be created if output path is one of stdout or stderr
+func TestNewZaploggerWithConf_NonStdoutOutputPath(t *testing.T) {
+	// get current working directory
+	dir, err := os.Getwd()
+	assert.Nil(t, err)
+	// create zap config with existing config file
+	_, config, _ := NewZapLoggerWithConfPath(dir+"/assets/zap.yaml", YAML)
+
+	config.OutputPaths = []string{"ut.log"}
+
+	logger, err := NewZapLoggerWithConf(config, nil)
+	assert.NotNil(t, logger)
+	assert.Nil(t, err)
+}
+
+// New lumberjack instance would be created if output path is one of stdout or stderr
+func TestNewZaploggerWithConf_NonStdoutErrOutputPath(t *testing.T) {
+	// get current working directory
+	dir, err := os.Getwd()
+	assert.Nil(t, err)
+	// create zap config with existing config file
+	_, config, _ := NewZapLoggerWithConfPath(dir+"/assets/zap.yaml", YAML)
+
+	config.ErrorOutputPaths = []string{"ut-err.log"}
+
+	logger, err := NewZapLoggerWithConf(config, nil)
+	assert.NotNil(t, logger)
+	assert.Nil(t, err)
+}
+
 // Happy case
 func TestNewZapLoggerWithConf_HappyCae(t *testing.T) {
 	// get current working directory
@@ -195,6 +245,54 @@ func TestNewLumberjackLoggerWithBytes_WithInvalidJson(t *testing.T) {
 	logger, err := NewLumberjackLoggerWithBytes([]byte(`{"key":"value"`), JSON)
 	assert.Nil(t, logger)
 	assert.NotNil(t, err)
+}
+
+// With unknown file type
+func TestNewLumberjackLoggerWithBytes_WithUnkownFileType(t *testing.T) {
+	logger, err := NewLumberjackLoggerWithBytes([]byte(`{"key":"value"}`), 2)
+	assert.Nil(t, logger)
+	assert.NotNil(t, err)
+}
+
+func TestTransformToZapConfigWrap(t *testing.T) {
+	config := NewZapStdoutConfig()
+	wrap := TransformToZapConfigWrap(config)
+
+	assert.Equal(t, config.Level.String(), wrap.Level)
+	assert.Equal(t, config.Development, wrap.Development)
+	assert.Equal(t, config.DisableCaller, wrap.DisableCaller)
+	assert.Equal(t, config.DisableStacktrace, wrap.DisableStacktrace)
+	assert.Equal(t, config.Sampling, wrap.Sampling)
+	assert.Equal(t, config.Encoding, wrap.Encoding)
+	assert.Equal(t, config.OutputPaths, wrap.OutputPaths)
+	assert.Equal(t, config.ErrorOutputPaths, wrap.ErrorOutputPaths)
+	assert.Equal(t, config.InitialFields, wrap.InitialFields)
+}
+
+func TestMarshalZapNameEncoder(t *testing.T) {
+	config := NewZapStdoutConfig()
+	assert.Equal(t, "full", marshalZapNameEncoder(config.EncoderConfig.EncodeName))
+}
+
+func TestMarshalZapCallerEncoder(t *testing.T) {
+	assert.Equal(t, "full", marshalZapCallerEncoder(zapcore.FullCallerEncoder))
+	assert.Equal(t, "short", marshalZapCallerEncoder(zapcore.ShortCallerEncoder))
+}
+
+func TestMarshalZapDurationEncoder(t *testing.T) {
+	assert.Equal(t, "string", marshalZapDurationEncoder(zapcore.StringDurationEncoder))
+	assert.Equal(t, "nanos", marshalZapDurationEncoder(zapcore.NanosDurationEncoder))
+	assert.Equal(t, "ms", marshalZapDurationEncoder(zapcore.MillisDurationEncoder))
+	assert.Equal(t, "secs", marshalZapDurationEncoder(zapcore.SecondsDurationEncoder))
+}
+
+func TestMarshalZapTimeEncoder(t *testing.T) {
+	assert.Equal(t, "RFC3339Nano", marshalZapTimeEncoder(zapcore.RFC3339NanoTimeEncoder))
+	assert.Equal(t, "RFC3339", marshalZapTimeEncoder(zapcore.RFC3339TimeEncoder))
+	assert.Equal(t, "ISO8601", marshalZapTimeEncoder(zapcore.ISO8601TimeEncoder))
+	assert.Equal(t, "millis", marshalZapTimeEncoder(zapcore.EpochMillisTimeEncoder))
+	assert.Equal(t, "nanos", marshalZapTimeEncoder(zapcore.EpochNanosTimeEncoder))
+	assert.Equal(t, "seconds", marshalZapTimeEncoder(zapcore.EpochTimeEncoder))
 }
 
 // Happy case
@@ -321,4 +419,19 @@ func TestTransformToZapConfig_HappyCase(t *testing.T) {
 	assert.Equal(t, "json", zapConfig.Encoding)
 	assert.Contains(t, zapConfig.OutputPaths, "ut.log")
 	assert.Contains(t, zapConfig.ErrorOutputPaths, "ut.log")
+}
+
+func TestZapConfigWrap_MarshalJSON_HappyCase(t *testing.T) {
+	wrap := TransformToZapConfigWrap(NewZapStdoutConfig())
+
+	bytes, err := wrap.MarshalJSON()
+	assert.Nil(t, err)
+	assert.NotNil(t, bytes)
+}
+
+func TestZapConfigWrap_UnmarshalJSON(t *testing.T) {
+	wrap := TransformToZapConfigWrap(NewZapStdoutConfig())
+
+	// unmarshal is not supported yet!
+	assert.Nil(t, wrap.UnmarshalJSON([]byte{}))
 }

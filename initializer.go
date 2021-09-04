@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rklogger contains couple of utility functions for initializing zap logger.
 package rklogger
 
 import (
@@ -17,11 +19,11 @@ import (
 	"reflect"
 )
 
-type FileType int
-
 var (
+	// StdoutEncoderConfig is default zap logger encoder config whose output path is stdout.
 	StdoutEncoderConfig = NewZapStdoutEncoderConfig()
-	StdoutLoggerConfig  = &zap.Config{
+	// StdoutLoggerConfig is default zap logger config whose output path is stdout.
+	StdoutLoggerConfig = &zap.Config{
 		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
 		Development:       true,
 		Encoding:          "console",
@@ -30,9 +32,12 @@ var (
 		OutputPaths:       []string{"stdout"},
 		ErrorOutputPaths:  []string{"stderr"},
 	}
+	// StdoutLogger is default zap logger whose output path is stdout.
 	StdoutLogger, _ = StdoutLoggerConfig.Build()
-	NoopLogger      = zap.NewNop()
+	// NoopLogger is default zap noop logger.
+	NoopLogger = zap.NewNop()
 
+	// EventLoggerConfigBytes is default zap logger which is used by EventLogger.
 	EventLoggerConfigBytes = []byte(`{
      "level": "info",
      "encoding": "console",
@@ -61,16 +66,20 @@ var (
     "localtime": true,
     "compress": true
    }`)
+	// Default EventLogger and EventLoggerConfig.
 	EventLogger, EventLoggerConfig, _ = NewZapLoggerWithBytes(EventLoggerConfigBytes, JSON)
 
+	// LumberjackConfig is default lumberjack config.
 	LumberjackConfig = NewLumberjackConfigDefault()
 )
 
-// Config file type which support json, yaml, toml and hcl
-// JSON: https://www.json.org/
-// YAML: https://yaml.org/
+// FileType is a config file type which support json and yaml currently.
+type FileType int
+
 const (
+	// JSON https://www.json.org/
 	JSON FileType = 0
+	// YAML https://yaml.org/
 	YAML FileType = 1
 )
 
@@ -86,12 +95,13 @@ func (fileType FileType) String() string {
 	return names[fileType]
 }
 
+// NewZapEventConfig creates new zap.Config for EventLogger
 func NewZapEventConfig() *zap.Config {
 	_, config, _ := NewZapLoggerWithBytes(EventLoggerConfigBytes, JSON)
 	return config
 }
 
-// Create new default lumberjack config
+// NewLumberjackConfigDefault creates new default lumberjack config
 func NewLumberjackConfigDefault() *lumberjack.Logger {
 	return &lumberjack.Logger{
 		MaxSize:    1024,
@@ -102,7 +112,7 @@ func NewLumberjackConfigDefault() *lumberjack.Logger {
 	}
 }
 
-// Create new stdout encoder config
+// NewZapStdoutEncoderConfig creates new stdout encoder config
 func NewZapStdoutEncoderConfig() *zapcore.EncoderConfig {
 	return &zapcore.EncoderConfig{
 		TimeKey:        "ts",
@@ -119,7 +129,7 @@ func NewZapStdoutEncoderConfig() *zapcore.EncoderConfig {
 	}
 }
 
-// Create new stdout config
+// NewZapStdoutConfig creates new stdout config
 func NewZapStdoutConfig() *zap.Config {
 	return &zap.Config{
 		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
@@ -132,7 +142,7 @@ func NewZapStdoutConfig() *zap.Config {
 	}
 }
 
-// Init zap logger with byte array from content of config file
+// NewZapLoggerWithBytes inits zap logger with byte array from content of config file
 // lumberjack.Logger could be empty, if not provided,
 // then, we will use default write sync
 func NewZapLoggerWithBytes(raw []byte, fileType FileType, opts ...zap.Option) (*zap.Logger, *zap.Config, error) {
@@ -186,7 +196,7 @@ func NewZapLoggerWithBytes(raw []byte, fileType FileType, opts ...zap.Option) (*
 	return logger, zapConfig, err
 }
 
-// Init zap logger with config file path
+// NewZapLoggerWithConfPath init zap logger with config file path
 // File path needs to be absolute path
 // lumberjack.Logger could be empty, if not provided,
 // then, we will use default write sync
@@ -214,7 +224,7 @@ func NewZapLoggerWithConfPath(filePath string, fileType FileType, opts ...zap.Op
 	return logger, config, err
 }
 
-// Init zap logger with config
+// NewZapLoggerWithConf inits zap logger with config
 // File path needs to be absolute path
 // lumberjack.Logger could be empty, if not provided,
 // then, we will use default write sync
@@ -297,7 +307,7 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	return zap.New(core, opts...).With(initialFields...), nil
 }
 
-// Init lumberjack logger as write sync with raw byte array of config file
+// NewLumberjackLoggerWithBytes inits lumberjack logger as write sync with raw byte array of config file
 func NewLumberjackLoggerWithBytes(raw []byte, fileType FileType) (*lumberjack.Logger, error) {
 	if raw == nil {
 		return nil, errors.New("input byte array is nil")
@@ -324,7 +334,7 @@ func NewLumberjackLoggerWithBytes(raw []byte, fileType FileType) (*lumberjack.Lo
 	return logger, nil
 }
 
-// Init lumberjack logger as write sync with lumberjack config file path
+// NewLumberjackLoggerWithConfPath inits lumberjack logger as write sync with lumberjack config file path
 // File path needs to be absolute path
 func NewLumberjackLoggerWithConfPath(filePath string, fileType FileType) (*lumberjack.Logger, error) {
 	if len(filePath) == 0 {
@@ -367,10 +377,10 @@ func validateFilePath(filePath string) error {
 func generateEncoder(config *zap.Config) zapcore.Encoder {
 	if config.Encoding == "json" {
 		return zapcore.NewJSONEncoder(config.EncoderConfig)
-	} else {
-		// default is console encoding
-		return zapcore.NewConsoleEncoder(config.EncoderConfig)
 	}
+
+	// default is console encoding
+	return zapcore.NewConsoleEncoder(config.EncoderConfig)
 }
 
 // Parse relative path, convert it to current working directory
@@ -388,7 +398,7 @@ func toAbsoluteWorkingDir(filePath string) (string, error) {
 	return path.Clean(path.Join(dir, filePath)), nil
 }
 
-// Transform wrapped zap config into zap.Config
+// TransformToZapConfig transforms wrapped zap config into zap.Config
 func TransformToZapConfig(wrap *ZapConfigWrap) *zap.Config {
 	if wrap == nil {
 		return nil
@@ -416,7 +426,7 @@ func TransformToZapConfig(wrap *ZapConfigWrap) *zap.Config {
 	return config
 }
 
-// Unmarshal zap.config
+// TransformToZapConfigWrap unmarshals zap.config
 func TransformToZapConfigWrap(config *zap.Config) *ZapConfigWrap {
 	return &ZapConfigWrap{
 		Level:             config.Level.String(),
@@ -496,7 +506,7 @@ func marshalZapLevelEncoder(encoder zapcore.LevelEncoder) string {
 	}
 }
 
-// A wrapper zap config which copied from zap.Config
+// ZapConfigWrap wraps zap config which copied from zap.Config
 // This is used while parsing zap yaml config to zap.Config with viper
 // because Level would throw an error since it is not a type of string
 type ZapConfigWrap struct {
@@ -537,7 +547,7 @@ type ZapConfigWrap struct {
 	InitialFields map[string]interface{} `json:"initialFields" yaml:"initialFields"`
 }
 
-// Marshal ZapConfigWrap
+// MarshalJSON marshals ZapConfigWrap
 func (wrap *ZapConfigWrap) MarshalJSON() ([]byte, error) {
 	encoderWrap := &ZapEncoderConfigWrap{
 		MessageKey:       wrap.EncoderConfig.MessageKey,
@@ -584,12 +594,12 @@ func (wrap *ZapConfigWrap) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Unmarshal ZapConfigWrap
+// UnmarshalJSON unmarshal ZapConfigWrap
 func (wrap *ZapConfigWrap) UnmarshalJSON([]byte) error {
 	return nil
 }
 
-// A wrapper zap EncoderConfig which copied from zapcore.EncoderConfig
+// ZapEncoderConfigWrap wraps zap EncoderConfig which copied from zapcore.EncoderConfig
 // This is used while parsing zap yaml config to zapcore.EncoderConfig with viper
 // because Level would throw an error since it is not a type of string
 type ZapEncoderConfigWrap struct {
