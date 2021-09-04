@@ -69,7 +69,7 @@ var (
 	// Default EventLogger and EventLoggerConfig.
 	EventLogger, EventLoggerConfig, _ = NewZapLoggerWithBytes(EventLoggerConfigBytes, JSON)
 
-	// Default lumberjack config.
+	// LumberjackConfig is default lumberjack config.
 	LumberjackConfig = NewLumberjackConfigDefault()
 )
 
@@ -77,9 +77,9 @@ var (
 type FileType int
 
 const (
-	// JSON: https://www.json.org/
+	// JSON https://www.json.org/
 	JSON FileType = 0
-	// YAML: https://yaml.org/
+	// YAML https://yaml.org/
 	YAML FileType = 1
 )
 
