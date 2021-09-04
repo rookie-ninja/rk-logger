@@ -186,7 +186,7 @@ func TestNewZaploggerWithConf_NonStdoutOutputPath(t *testing.T) {
 
 	config.OutputPaths = []string{"ut.log"}
 
-	logger, err := NewZapLoggerWithConf(config, nil)
+	logger, err := NewZapLoggerWithConf(config, LumberjackConfig)
 	assert.NotNil(t, logger)
 	assert.Nil(t, err)
 }
@@ -201,7 +201,7 @@ func TestNewZaploggerWithConf_NonStdoutErrOutputPath(t *testing.T) {
 
 	config.ErrorOutputPaths = []string{"ut-err.log"}
 
-	logger, err := NewZapLoggerWithConf(config, nil)
+	logger, err := NewZapLoggerWithConf(config, LumberjackConfig)
 	assert.NotNil(t, logger)
 	assert.Nil(t, err)
 }
@@ -293,6 +293,13 @@ func TestMarshalZapTimeEncoder(t *testing.T) {
 	assert.Equal(t, "millis", marshalZapTimeEncoder(zapcore.EpochMillisTimeEncoder))
 	assert.Equal(t, "nanos", marshalZapTimeEncoder(zapcore.EpochNanosTimeEncoder))
 	assert.Equal(t, "seconds", marshalZapTimeEncoder(zapcore.EpochTimeEncoder))
+}
+
+func TestMarshalZapLevelEncoder(t *testing.T) {
+	assert.Equal(t, "capital", marshalZapLevelEncoder(zapcore.CapitalLevelEncoder))
+	assert.Equal(t, "capitalColor", marshalZapLevelEncoder(zapcore.CapitalColorLevelEncoder))
+	assert.Equal(t, "color", marshalZapLevelEncoder(zapcore.LowercaseColorLevelEncoder))
+	assert.Equal(t, "lower", marshalZapLevelEncoder(zapcore.LowercaseLevelEncoder))
 }
 
 // Happy case
