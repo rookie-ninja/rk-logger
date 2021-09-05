@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/rookie-ninja/rk-logger/branch/master/graph/badge.svg?token=QQ5WZ5JBD4)](https://codecov.io/gh/rookie-ninja/rk-logger)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-logger)](https://goreportcard.com/report/github.com/rookie-ninja/rk-logger)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-logger.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-logger?ref=badge_shield)
 
 Log initializer written with golang.
 Currently, support zap logger as default logger and lumberjack as log rotation
@@ -170,3 +171,7 @@ lark@rkdev.info.
 
 Released under the [Apache 2.0 License](LICENSE).
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-logger.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-logger?ref=badge_large)
