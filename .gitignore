@@ -17,3 +17,6 @@
 .idea
 
 *.log
+
+# ut coverage
+coverage.txt
