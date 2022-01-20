@@ -81,6 +81,11 @@ const (
 	JSON FileType = 0
 	// YAML https://yaml.org/
 	YAML FileType = 1
+
+	// EncodingConsole console encoding style of logging
+	EncodingConsole = "console"
+	// EncodingJson console encoding style of logging
+	EncodingJson = "json"
 )
 
 // Stringfy above config file types.
@@ -93,6 +98,32 @@ func (fileType FileType) String() string {
 	}
 
 	return names[fileType]
+}
+
+// NewZapLoggerWithOverride create new zap.Logger with override
+func NewZapLoggerWithOverride(loggerEncoding string, loggerOutputPath ...string) (*zap.Logger, error) {
+	zapLoggerConfig := NewZapStdoutConfig()
+	lumberjackConfig := NewLumberjackConfigDefault()
+
+	if loggerEncoding == EncodingJson || len(loggerOutputPath) > 0 {
+		if loggerEncoding == EncodingJson {
+			zapLoggerConfig.Encoding = EncodingJson
+		}
+
+		if len(loggerOutputPath) > 0 {
+			zapLoggerConfig.OutputPaths = toAbsPath(loggerOutputPath...)
+		}
+
+		if lumberjackConfig == nil {
+			lumberjackConfig = NewLumberjackConfigDefault()
+		}
+	}
+
+	if logger, err := NewZapLoggerWithConf(zapLoggerConfig, lumberjackConfig, zap.AddCaller()); err != nil {
+		return nil, err
+	} else {
+		return logger, nil
+	}
 }
 
 // NewZapEventConfig creates new zap.Config for EventLogger
@@ -617,4 +648,20 @@ type ZapEncoderConfigWrap struct {
 	EncodeCaller     string `json:"callerEncoder" yaml:"callerEncoder"`
 	EncodeName       string `json:"nameEncoder" yaml:"nameEncoder"`
 	ConsoleSeparator string `json:"consoleSeparator" yaml:"consoleSeparator"`
+}
+
+// Make incoming paths to absolute path with current working directory attached as prefix
+func toAbsPath(p ...string) []string {
+	res := make([]string, 0)
+
+	for i := range p {
+		newPath := p[i]
+		if !path.IsAbs(p[i]) {
+			wd, _ := os.Getwd()
+			newPath = path.Join(wd, p[i])
+		}
+		res = append(res, newPath)
+	}
+
+	return res
 }

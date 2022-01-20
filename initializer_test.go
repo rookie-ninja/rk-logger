@@ -13,6 +13,28 @@ import (
 	"testing"
 )
 
+func TestNewZapLoggerWithOverride(t *testing.T) {
+	// with json, output path
+	logger, err := NewZapLoggerWithOverride("json", "logs/ut.log")
+	assert.NotNil(t, logger)
+	assert.Nil(t, err)
+
+	// with console, output path
+	logger, err = NewZapLoggerWithOverride("console", "logs/ut.log")
+	assert.NotNil(t, logger)
+	assert.Nil(t, err)
+
+	// with invalid, output path
+	logger, err = NewZapLoggerWithOverride("invalid", "logs/ut.log")
+	assert.NotNil(t, logger)
+	assert.Nil(t, err)
+
+	// without output paths
+	logger, err = NewZapLoggerWithOverride("invalid")
+	assert.NotNil(t, logger)
+	assert.Nil(t, err)
+}
+
 func TestConfigFileType_Indexing(t *testing.T) {
 	assert.Equal(t, FileType(0), JSON)
 	assert.Equal(t, FileType(1), YAML)
