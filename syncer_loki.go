@@ -62,15 +62,15 @@ func WithLokiPassword(pass string) LokiSyncerOption {
 	}
 }
 
-// WithClientTls provide loki http client TLS config
-func WithClientTls(conf *tls.Config) LokiSyncerOption {
+// WithLokiClientTls provide loki http client TLS config
+func WithLokiClientTls(conf *tls.Config) LokiSyncerOption {
 	return func(syncer *lokiSyncer) {
 		syncer.tlsConfig = conf
 	}
 }
 
-// WithLabel provide labels, should follow isValidLabelName()
-func WithLabel(key, value string) LokiSyncerOption {
+// WithLokiLabel provide labels, should follow isValidLabelName()
+func WithLokiLabel(key, value string) LokiSyncerOption {
 	return func(syncer *lokiSyncer) {
 		if len(key) > 0 && len(value) > 0 {
 			syncer.labels[key] = value
@@ -78,8 +78,8 @@ func WithLabel(key, value string) LokiSyncerOption {
 	}
 }
 
-// WithMaxBatchWaitMs provide max batch wait time in milli
-func WithMaxBatchWaitMs(in time.Duration) LokiSyncerOption {
+// WithLokiMaxBatchWaitMs provide max batch wait time in milli
+func WithLokiMaxBatchWaitMs(in time.Duration) LokiSyncerOption {
 	return func(syncer *lokiSyncer) {
 		if in.Milliseconds() > 0 {
 			syncer.maxBatchWaitMs = in
@@ -87,8 +87,8 @@ func WithMaxBatchWaitMs(in time.Duration) LokiSyncerOption {
 	}
 }
 
-// WithMaxBatchSize provide max batch size
-func WithMaxBatchSize(batchSize int) LokiSyncerOption {
+// WithLokiMaxBatchSize provide max batch size
+func WithLokiMaxBatchSize(batchSize int) LokiSyncerOption {
 	return func(syncer *lokiSyncer) {
 		if batchSize > 0 {
 			syncer.maxBatchSize = batchSize

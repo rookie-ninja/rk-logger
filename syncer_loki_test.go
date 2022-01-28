@@ -37,10 +37,10 @@ func TestNewLokiSyncer(t *testing.T) {
 		WithLokiPath("ut-path"),
 		WithLokiUsername("ut-name"),
 		WithLokiPassword("ut-pass"),
-		WithClientTls(&tls.Config{}),
-		WithLabel("key", "value"),
-		WithMaxBatchWaitMs(time.Second),
-		WithMaxBatchSize(10))
+		WithLokiClientTls(&tls.Config{}),
+		WithLokiLabel("key", "value"),
+		WithLokiMaxBatchWaitMs(time.Second),
+		WithLokiMaxBatchSize(10))
 	assert.Equal(t, "https://ut-addr", syncer.addr)
 	assert.Equal(t, "ut-path", syncer.path)
 	assert.NotEmpty(t, syncer.basicAuthHeader)
