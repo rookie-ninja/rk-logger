@@ -255,11 +255,9 @@ func NewZapLoggerWithConfPath(filePath string, fileType FileType, opts ...zap.Op
 	return logger, config, err
 }
 
-// NewZapLoggerWithConf inits zap logger with config
-// File path needs to be absolute path
-// lumberjack.Logger could be empty, if not provided,
-// then, we will use default write sync
-func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ...zap.Option) (*zap.Logger, error) {
+// NewZapLoggerWithConfAndSyncer
+// For backward compatibility with NewZapLoggerWithConf
+func NewZapLoggerWithConfAndSyncer(config *zap.Config, lumber *lumberjack.Logger, extraSyncers []zapcore.WriteSyncer, opts ...zap.Option) (*zap.Logger, error) {
 	// Validate parameters
 	if config == nil {
 		return nil, errors.New("zap config is nil")
@@ -270,6 +268,11 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	}
 
 	sync := make([]zapcore.WriteSyncer, 0, 0)
+
+	if extraSyncers != nil {
+		sync = append(sync, extraSyncers...)
+	}
+
 	// Iterate output path and attach to lumberjack
 	// Remember, each logger will use same lumberjack logger configuration
 	for i := range config.OutputPaths {
@@ -336,6 +339,13 @@ func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ..
 	}
 
 	return zap.New(core, opts...).With(initialFields...), nil
+}
+
+// NewZapLoggerWithConf inits zap logger with config
+// lumberjack.Logger could be empty, if not provided,
+// then, we will use default write sync
+func NewZapLoggerWithConf(config *zap.Config, lumber *lumberjack.Logger, opts ...zap.Option) (*zap.Logger, error) {
+	return NewZapLoggerWithConfAndSyncer(config, lumber, nil, opts...)
 }
 
 // NewLumberjackLoggerWithBytes inits lumberjack logger as write sync with raw byte array of config file
