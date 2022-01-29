@@ -28,7 +28,7 @@ func TestNewLokiSyncer(t *testing.T) {
 	assert.Equal(t, 1000, syncer.maxBatchSize)
 	assert.NotNil(t, syncer.quitChannel)
 	assert.NotNil(t, syncer.logChannel)
-
+	syncer.Bootstrap(context.TODO())
 	syncer.Interrupt(context.TODO())
 
 	// with options
@@ -50,13 +50,14 @@ func TestNewLokiSyncer(t *testing.T) {
 	assert.NotNil(t, syncer.quitChannel)
 	assert.NotNil(t, syncer.logChannel)
 
+	syncer.Bootstrap(context.TODO())
 	syncer.Interrupt(context.TODO())
 }
 
 func TestLokiSyncer_send(t *testing.T) {
 	defer assertNotPanic(t)
 
-	syncer := lokiSyncer{
+	syncer := LokiSyncer{
 		httpClient:      http.DefaultClient,
 		basicAuthHeader: "Basic xxx",
 	}
@@ -69,7 +70,7 @@ func TestLokiSyncer_send(t *testing.T) {
 func TestLokiSyncer_Write(t *testing.T) {
 	defer assertNotPanic(t)
 
-	syncer := &lokiSyncer{
+	syncer := &LokiSyncer{
 		logChannel: make(chan *lokiValue),
 	}
 
@@ -83,8 +84,18 @@ func TestLokiSyncer_Write(t *testing.T) {
 func TestLokiSyncer_Sync(t *testing.T) {
 	defer assertNotPanic(t)
 
-	syncer := &lokiSyncer{}
+	syncer := &LokiSyncer{}
 	assert.Nil(t, syncer.Sync())
+}
+
+func TestAtomicMap(t *testing.T) {
+	m := newAtomicMap()
+
+	m.Set("key", "value")
+	assert.Equal(t, "value", m.Get("key"))
+	assert.Len(t, m.Copy(), 1)
+	m.Delete("key")
+	assert.Empty(t, m.Copy())
 }
 
 func assertNotPanic(t *testing.T) {
