@@ -78,7 +78,7 @@ func TestLokiSyncer_Write(t *testing.T) {
 func TestLokiSyncer_Sync(t *testing.T) {
 	defer assertNotPanic(t)
 
-	syncer := &LokiSyncer{}
+	syncer := NewLokiSyncer()
 	assert.Nil(t, syncer.Sync())
 }
 
