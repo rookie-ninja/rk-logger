@@ -27,7 +27,7 @@ func TestNewLokiSyncer(t *testing.T) {
 	assert.Equal(t, 3000*time.Millisecond, syncer.maxBatchWaitMs)
 	assert.Equal(t, 1000, syncer.maxBatchSize)
 	assert.NotNil(t, syncer.quitChannel)
-	assert.NotNil(t, syncer.logChannel)
+	assert.NotNil(t, syncer.buffer)
 	syncer.Bootstrap(context.TODO())
 	syncer.Interrupt(context.TODO())
 
@@ -48,7 +48,7 @@ func TestNewLokiSyncer(t *testing.T) {
 	assert.Equal(t, time.Second, syncer.maxBatchWaitMs)
 	assert.Equal(t, 10, syncer.maxBatchSize)
 	assert.NotNil(t, syncer.quitChannel)
-	assert.NotNil(t, syncer.logChannel)
+	assert.NotNil(t, syncer.buffer)
 
 	syncer.Bootstrap(context.TODO())
 	syncer.Interrupt(context.TODO())
@@ -60,25 +60,19 @@ func TestLokiSyncer_send(t *testing.T) {
 	syncer := LokiSyncer{
 		httpClient:      http.DefaultClient,
 		basicAuthHeader: "Basic xxx",
+		buffer:          newAtomicSlice(),
 	}
 
-	entries := make([]*lokiValue, 0)
-
-	syncer.send(entries)
+	syncer.send()
 }
 
 func TestLokiSyncer_Write(t *testing.T) {
 	defer assertNotPanic(t)
 
-	syncer := &LokiSyncer{
-		logChannel: make(chan *lokiValue),
-	}
-
-	go func() {
-		<-syncer.logChannel
-	}()
+	syncer := NewLokiSyncer()
 
 	syncer.Write([]byte("ut"))
+	assert.Equal(t, syncer.buffer.len(), 1)
 }
 
 func TestLokiSyncer_Sync(t *testing.T) {

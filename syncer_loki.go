@@ -105,7 +105,7 @@ func NewLokiSyncer(opts ...LokiSyncerOption) *LokiSyncer {
 		maxBatchWaitMs: 3000 * time.Millisecond,
 		maxBatchSize:   1000,
 		quitChannel:    make(chan struct{}),
-		logChannel:     make(chan *lokiValue),
+		buffer:         newAtomicSlice(),
 	}
 
 	for i := range opts {
@@ -156,24 +156,29 @@ func (syncer *LokiSyncer) initBasicAuth() {
 
 // LokiSyncer which will periodically send logs to Loki
 type LokiSyncer struct {
-	addr            string          `yaml:"addr" json:"addr"`
-	path            string          `yaml:"path" json:"path"`
-	username        string          `yaml:"username" json:"username"`
-	password        string          `yaml:"-" json:"-"`
-	basicAuthHeader string          `yaml:"-" json:"-"`
-	tlsConfig       *tls.Config     `yaml:"-" json:"-"`
-	maxBatchWaitMs  time.Duration   `yaml:"maxBatchWaitMs" json:"maxBatchWaitMs"`
-	maxBatchSize    int             `yaml:"maxBatchSize" json:"maxBatchSize"`
-	labels          *atomicMap      `yaml:"-" json:"-"`
-	logChannel      chan *lokiValue `yaml:"-" json:"-"`
-	quitChannel     chan struct{}   `yaml:"-" json:"-"`
-	waitGroup       sync.WaitGroup  `yaml:"-" json:"-"`
-	httpClient      *http.Client    `yaml:"-" json:"-"`
+	addr            string         `yaml:"addr" json:"addr"`
+	path            string         `yaml:"path" json:"path"`
+	username        string         `yaml:"username" json:"username"`
+	password        string         `yaml:"-" json:"-"`
+	basicAuthHeader string         `yaml:"-" json:"-"`
+	tlsConfig       *tls.Config    `yaml:"-" json:"-"`
+	maxBatchWaitMs  time.Duration  `yaml:"maxBatchWaitMs" json:"maxBatchWaitMs"`
+	maxBatchSize    int            `yaml:"maxBatchSize" json:"maxBatchSize"`
+	labels          *atomicMap     `yaml:"-" json:"-"`
+	buffer          *atomicSlice   `yaml:"-" json:"-"`
+	quitChannel     chan struct{}  `yaml:"-" json:"-"`
+	waitGroup       sync.WaitGroup `yaml:"-" json:"-"`
+	httpClient      *http.Client   `yaml:"-" json:"-"`
 }
 
 // Send message to remote loki server
-func (syncer *LokiSyncer) send(entries []*lokiValue) {
-	streams := syncer.newLokiStreamList(entries)
+func (syncer *LokiSyncer) send() {
+	values := syncer.buffer.snapshotAndClear()
+	if len(values) < 1 {
+		return
+	}
+
+	streams := syncer.newLokiStreamList(values)
 
 	req, _ := http.NewRequest(http.MethodPost, syncer.addr+syncer.path, bytes.NewBuffer(streams))
 	req.Header.Set("Content-Type", "application/json")
@@ -199,15 +204,10 @@ func (syncer *LokiSyncer) send(entries []*lokiValue) {
 // Bootstrap run periodic jobs
 func (syncer *LokiSyncer) Bootstrap(context.Context) {
 	go func() {
-		var batch []*lokiValue
-		batchSize := 0
 		waitChannel := time.NewTimer(syncer.maxBatchWaitMs)
 
 		defer func() {
-			if batchSize > 0 {
-				syncer.send(batch)
-			}
-
+			syncer.send()
 			syncer.waitGroup.Done()
 		}()
 
@@ -215,22 +215,14 @@ func (syncer *LokiSyncer) Bootstrap(context.Context) {
 			select {
 			case <-syncer.quitChannel:
 				return
-			case entry := <-syncer.logChannel:
-				batch = append(batch, entry)
-				batchSize++
-				if batchSize >= syncer.maxBatchSize {
-					syncer.send(batch)
-					batch = []*lokiValue{}
-					batchSize = 0
+			case <-waitChannel.C:
+				syncer.send()
+				waitChannel.Reset(syncer.maxBatchWaitMs)
+			default:
+				if syncer.buffer.len() >= syncer.maxBatchSize {
+					syncer.send()
 					waitChannel.Reset(syncer.maxBatchWaitMs)
 				}
-			case <-waitChannel.C:
-				if batchSize > 0 {
-					syncer.send(batch)
-					batch = []*lokiValue{}
-					batchSize = 0
-				}
-				waitChannel.Reset(syncer.maxBatchWaitMs)
 			}
 		}
 	}()
@@ -292,17 +284,60 @@ type lokiStreamList struct {
 
 // Write to logChannel
 func (syncer *LokiSyncer) Write(p []byte) (n int, err error) {
-	go func() {
-		syncer.logChannel <- &lokiValue{
-			Values: []string{fmt.Sprintf("%d", time.Now().UnixNano()), string(p)},
-		}
-	}()
+	syncer.buffer.add(&lokiValue{
+		Values: []string{fmt.Sprintf("%d", time.Now().UnixNano()), string(p)},
+	})
+
 	return len(p), nil
 }
 
 // Noop
 func (syncer *LokiSyncer) Sync() error {
 	return nil
+}
+
+func newAtomicSlice() *atomicSlice {
+	return &atomicSlice{
+		buf:   make([]*lokiValue, 0),
+		mutex: sync.Mutex{},
+	}
+}
+
+type atomicSlice struct {
+	buf   []*lokiValue
+	mutex sync.Mutex
+}
+
+func (a *atomicSlice) add(item *lokiValue) {
+	if item == nil {
+		return
+	}
+
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	a.buf = append(a.buf, item)
+}
+
+func (a *atomicSlice) snapshotAndClear() []*lokiValue {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	res := make([]*lokiValue, 0)
+	for i := range a.buf {
+		res = append(res, a.buf[i])
+	}
+
+	a.buf = make([]*lokiValue, 0)
+
+	return res
+}
+
+func (a *atomicSlice) len() int {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	return len(a.buf)
 }
 
 func newAtomicMap() *atomicMap {
