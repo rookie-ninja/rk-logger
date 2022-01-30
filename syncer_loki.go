@@ -292,10 +292,11 @@ type lokiStreamList struct {
 
 // Write to logChannel
 func (syncer *LokiSyncer) Write(p []byte) (n int, err error) {
-	syncer.logChannel <- &lokiValue{
-		Values: []string{fmt.Sprintf("%d", time.Now().UnixNano()), string(p)},
-	}
-
+	go func() {
+		syncer.logChannel <- &lokiValue{
+			Values: []string{fmt.Sprintf("%d", time.Now().UnixNano()), string(p)},
+		}
+	}()
 	return len(p), nil
 }
 
