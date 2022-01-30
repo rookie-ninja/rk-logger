@@ -293,6 +293,7 @@ func (syncer *LokiSyncer) Write(p []byte) (n int, err error) {
 
 // Noop
 func (syncer *LokiSyncer) Sync() error {
+	syncer.send()
 	return nil
 }
 
