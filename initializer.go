@@ -8,7 +8,8 @@ package rklogger
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
+	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -405,9 +406,9 @@ func validateFilePath(filePath string) error {
 
 	if err != nil {
 		if os.IsNotExist(err) {
-			err = errors.Errorf("file does not exists, filePath:%s", filePath)
+			err = errors.New(fmt.Sprintf("file does not exists, filePath:%s", filePath))
 		} else {
-			err = errors.Errorf("error thrown while reading file, filePath:%s", filePath)
+			err = errors.New(fmt.Sprintf("error thrown while reading file, filePath:%s", filePath))
 		}
 	}
 
