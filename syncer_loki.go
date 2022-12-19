@@ -225,6 +225,7 @@ func (syncer *LokiSyncer) Bootstrap(context.Context) {
 				}
 				time.Sleep(time.Duration(10) * time.Millisecond)
 			}
+			time.Sleep(1 * time.Second)
 		}
 	}()
 }
@@ -236,6 +237,7 @@ func (syncer *LokiSyncer) Interrupt(context.Context) {
 }
 
 // ************* Model *************
+
 func (syncer *LokiSyncer) AddLabel(key, value string) {
 	syncer.labels.Set(key, value)
 }
