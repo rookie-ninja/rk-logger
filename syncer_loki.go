@@ -223,9 +223,8 @@ func (syncer *LokiSyncer) Bootstrap(context.Context) {
 					syncer.send()
 					waitChannel.Reset(syncer.maxBatchWaitMs)
 				}
-				time.Sleep(time.Duration(10) * time.Millisecond)
+				time.Sleep(time.Duration(1) * time.Second)
 			}
-			time.Sleep(1 * time.Second)
 		}
 	}()
 }
